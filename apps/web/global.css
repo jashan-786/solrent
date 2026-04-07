@@ -2,28 +2,52 @@
 @source "../../packages/ui/src";
 
 @theme {
-    /* Surface (60%) */
+    /* Primary (60%) - Soft White & Light Gray for backgrounds */
     --color-surface-primary: #F8FAFC;
-    --color-surface-secondary: #F1F5F9;
-    --color-surface-dark: #020617;
+    --color-surface-secondary: #EEF2F7;
 
-    /* Brand (30%) */
-    --color-brand-navy: #0F172A;
-    --color-text-strong: #1E293B;
-    --color-text-muted: #64748B;
+    /* Secondary (30%) - High Contrast for text & nav */
+    --color-auth-navy: #0F172A;
+    --color-auth-slate: #1E293B;
 
-    /* Accent (10%) */
-    --color-solrent-emerald: #10B981;
-    --color-solrent-surface: #ECFDF5;
-    --color-solrent-indigo: #6366F1;
+    /* Accent & Highlight (10%) - Status & Actions */
+    --color-sol-emerald: #10B981;
+    --color-sol-indigo: #6366F1;
 
-    /* UI Specs */
-    --radius-twelve: 12px;
-    --font-sans: var(--font-manrope), ui-sans-serif, system-ui;
+    /* Typography Settings mapped from Next.js Layout */
+    --font-body: var(--font-inter), ui-sans-serif, system-ui;
+    --font-heading: var(--font-manrope), ui-sans-serif, system-ui;
 }
 
 @layer base {
     body {
-        @apply bg-surface-primary text-text-strong font-sans;
+        /* This applies the 60% color automatically to the whole app */
+        @apply bg-surface-primary text-auth-slate font-body;
+        font-size: 18px;
     }
+
+    /* Automatically apply the secondary color and font to headings */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-heading text-auth-navy font-bold;
+    }
+
+    /* Modular Typography Scale */
+    h1 { font-size: 68.66px; }
+    h2 { font-size: 54.93px; }
+    h3 { font-size: 43.95px; }
+    h4 { font-size: 35.16px; }
+    h5 { font-size: 28.13px; }
+    h6 { font-size: 22.5px; }
+    p { font-size: 18px; }
+    small { font-size: 14.4px; }
+    .text-tiny { font-size: 11.52px; }
 }
+
+/* text-sm (14px): The Dashboard Default. Use this for 80% of your app (table rows, form inputs, buttons, and card descriptions).
+text-base (16px): Readable Text. Use this for longer paragraphs in your app, like reading a Lease Agreement or notifications.
+text-xs (12px): Meta-data. Use this for things that are secondary, like timestamps ("Paid 2 hrs ago"), Solana wallet addresses, or small table headers. */

@@ -1,5 +1,11 @@
+import { Header, Main, Hero } from "@/components/landing";
+
 export default function Home() {
   return (
-    <div className="text-solrent-indigo">Hello World</div>
+    <div className="text-solrent-indigo min-h-screen">
+      <Header />
+      <Main />
+      <Hero />
+    </div>
   );
 } 
