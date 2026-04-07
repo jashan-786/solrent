@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@source "../../packages/ui/src";
+
+@theme {
+    /* Surface (60%) */
+    --color-surface-primary: #F8FAFC;
+    --color-surface-secondary: #F1F5F9;
+    --color-surface-dark: #020617;
+
+    /* Brand (30%) */
+    --color-brand-navy: #0F172A;
+    --color-text-strong: #1E293B;
+    --color-text-muted: #64748B;
+
+    /* Accent (10%) */
+    --color-solrent-emerald: #10B981;
+    --color-solrent-surface: #ECFDF5;
+    --color-solrent-indigo: #6366F1;
+
+    /* UI Specs */
+    --radius-twelve: 12px;
+    --font-sans: var(--font-manrope), ui-sans-serif, system-ui;
+}
+
+@layer base {
+    body {
+        @apply bg-surface-primary text-text-strong font-sans;
+    }
+}
