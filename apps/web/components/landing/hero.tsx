@@ -1,4 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
+import { Bolt, RefreshCcw, ShieldPlus, Zap } from "lucide-react";
+import { HeroCard } from "./herocard";
 
 export function Hero() {
     return (
@@ -10,33 +12,12 @@ export function Hero() {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 md:flex-row w-full md:w-3/4">
+            <div className="flex flex-col justify-center my-16 items-center gap-7 md:flex-row w-full md:w-3/4">
 
-                <Card className="w-full md:w-1/2">
-                    <CardHeader>
-                        <CardTitle>SolRent</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p>The Editorial Ledger provides the infrastructure for the next generation of real estate.</p>
-                    </CardContent>
-                </Card>
-                <Card className="w-full md:w-1/2">
-                    <CardHeader>
-                        <CardTitle>SolRent</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p>The Editorial Ledger provides the infrastructure for the next generation of real estate.</p>
-                    </CardContent>
-                </Card>
+                <HeroCard icon={<RefreshCcw />} title="Recurring Automation" description="Set up immutable rental streams. Payments are triggered automatically on the first of each month, directly from tenant vaults." />
+                <HeroCard icon={<Bolt />} title="Proof of Rent NFTs" description="Each payment mints a soulbound NFT receipt. Tenants build a verified, on-chain credit history for future rentals." />
+                <HeroCard icon={<Zap />} title="Ultra-Low Fees" description="Stop losing 3% to traditional processors. Leverage Solana's high-speed network for sub-penny transaction costs." />
 
-                <Card className="w-full md:w-1/2">
-                    <CardHeader>
-                        <CardTitle>SolRent</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p>The Editorial Ledger provides the infrastructure for the next generation of real estate.</p>
-                    </CardContent>
-                </Card>
 
             </div>
         </section>

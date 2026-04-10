@@ -5,7 +5,10 @@
     /* Primary (60%) - Soft White & Light Gray for backgrounds */
     --color-surface-primary: #F8FAFC;
     --color-surface-secondary: #EEF2F7;
-
+    --color-surface-tertiary: #334155;
+    --color-surface-quaternary: #F9FAFB;
+    --color-card-bg: #F7F9FB;
+    --color-green-back: #4EDEA3;
     /* Secondary (30%) - High Contrast for text & nav */
     --color-auth-navy: #0F172A;
     --color-auth-slate: #1E293B;
@@ -13,6 +16,11 @@
     /* Accent & Highlight (10%) - Status & Actions */
     --color-sol-emerald: #10B981;
     --color-sol-indigo: #6366F1;
+
+    --color-text-grey: #76777D;
+    --color-background-grey: #E0E3E5;
+    --color-background-secondary-grey: #F7F9FB;
+
 
     /* Typography Settings mapped from Next.js Layout */
     --font-body: var(--font-inter), ui-sans-serif, system-ui;
@@ -37,15 +45,41 @@
     }
 
     /* Modular Typography Scale */
-    h1 { font-size: 68.66px; }
-    h2 { font-size: 54.93px; }
-    h3 { font-size: 43.95px; }
-    h4 { font-size: 35.16px; }
-    h5 { font-size: 28.13px; }
-    h6 { font-size: 22.5px; }
-    p { font-size: 18px; }
-    small { font-size: 14.4px; }
-    .text-tiny { font-size: 11.52px; }
+    h1 {
+        font-size: 72px;
+    }
+
+    h2 {
+        font-size: 48px;
+    }
+
+    h3 {
+        font-size: 36px;
+    }
+
+    h4 {
+        font-size: 24px;
+    }
+
+    h5 {
+        font-size: 20px;
+    }
+
+    h6 {
+        font-size: 16px;
+    }
+
+    p {
+        font-size: 18px;
+    }
+
+    small {
+        font-size: 14.4px;
+    }
+
+    .text-tiny {
+        font-size: 11.52px;
+    }
 }
 
 /* text-sm (14px): The Dashboard Default. Use this for 80% of your app (table rows, form inputs, buttons, and card descriptions).
