@@ -14,7 +14,7 @@ export default function LandlordSidebar() {
 
                     <motion.div
                         key={item.title}
-                        whileHover="hover" 
+                        whileHover="hover"
                         className="w-full"
                     >
                         <a href={item.href}>
@@ -29,7 +29,7 @@ export default function LandlordSidebar() {
                             >
                                 <motion.div
                                     variants={{
-                                        hover: { color: "#10B981" } 
+                                        hover: { color: "#10B981" }
                                     }}
                                     className="text-text-muted"
                                 >
@@ -40,7 +40,7 @@ export default function LandlordSidebar() {
                                     variants={{
                                         hover: { color: "#10B981" }
                                     }}
-                                    className="hidden md:inline text-text-muted font-medium"
+                                    className="hidden md:inline text-text-muted text-sm"
                                 >
                                     {item.title}
                                 </motion.div>
@@ -54,7 +54,7 @@ export default function LandlordSidebar() {
 
                 <motion.div
                     key="logout"
-                    whileHover="hover" 
+                    whileHover="hover"
                     className="w-full"
                 >
                     <a href="/landlord/logout">
@@ -69,7 +69,7 @@ export default function LandlordSidebar() {
                         >
                             <motion.div
                                 variants={{
-                                    hover: { color: "#10B981" } 
+                                    hover: { color: "#10B981" }
                                 }}
                                 className="text-text-muted"
                             >
@@ -80,7 +80,7 @@ export default function LandlordSidebar() {
                                 variants={{
                                     hover: { color: "#10B981" }
                                 }}
-                                className="hidden md:inline text-text-muted font-medium"
+                                className="hidden md:inline text-text-muted text-sm"
                             >
                                 LOGOUT
                             </motion.div>

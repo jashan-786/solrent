@@ -13,7 +13,7 @@ export default function TenantSidebar() {
                 {tenantSidebarItems.map((item) => (
                     <motion.div
                         key={item.title}
-                        whileHover="hover" 
+                        whileHover="hover"
                         className="w-full"
                     >
                         <a href={item.href}>
@@ -28,7 +28,7 @@ export default function TenantSidebar() {
                             >
                                 <motion.div
                                     variants={{
-                                        hover: { color: "#10B981" } 
+                                        hover: { color: "#10B981" }
                                     }}
                                     className="text-text-muted"
                                 >
@@ -39,7 +39,7 @@ export default function TenantSidebar() {
                                     variants={{
                                         hover: { color: "#10B981" }
                                     }}
-                                    className="hidden md:inline text-text-muted font-medium"
+                                    className="hidden md:inline text-text-muted  text-sm"
                                 >
                                     {item.title}
                                 </motion.div>
@@ -53,7 +53,7 @@ export default function TenantSidebar() {
                 <a href="/tenant/logout">
                     <div className="flex flex-row gap-2 justify-start items-center w-full">
                         <LogOut />
-                        <div className="hidden md:inline text-[#64748B]">LOGOUT</div>
+                        <div className="hidden md:inline text-[#64748B] text-sm ">LOGOUT</div>
                     </div>
                 </a>
             </div>
