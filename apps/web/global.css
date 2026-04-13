@@ -2,7 +2,28 @@
 @source "../../packages/ui/src";
 
 @theme {
-    /* Primary (60%) - Soft White & Light Gray for backgrounds */
+    /* Shadcn UI Standard Variables */
+    --color-background: var(--color-surface-primary);
+    --color-foreground: var(--color-auth-navy);
+    --color-primary: var(--color-auth-navy);
+    --color-primary-foreground: var(--color-surface-primary);
+    --color-secondary: var(--color-surface-secondary);
+    --color-secondary-foreground: var(--color-auth-navy);
+    --color-muted: var(--color-background-grey);
+    --color-muted-foreground: var(--color-text-grey);
+    --color-accent: var(--color-surface-secondary);
+    --color-accent-foreground: var(--color-auth-navy);
+    --color-destructive: #ef4444;
+    --color-destructive-foreground: #f8fafc;
+    --color-border: #e2e8f0;
+    --color-input: #e2e8f0;
+    --color-ring: var(--color-auth-navy);
+    --color-card: var(--color-card-bg);
+    --color-card-foreground: var(--color-auth-navy);
+    --color-popover: var(--color-surface-primary);
+    --color-popover-foreground: var(--color-auth-navy);
+
+    /* Original Theme Variables */
     --color-surface-primary: #F8FAFC;
     --color-surface-secondary: #EEF2F7;
     --color-surface-tertiary: #334155;

@@ -4,7 +4,7 @@ import { Banknote, ClipboardMinus, FileBox, LayoutDashboard, LogIn, LogOut, Sett
 import { motion } from "framer-motion";
 export default function TenantSidebar() {
     return (
-        <div className="w-16 md:w-64 flex flex-col gap-4 justify-center items-center h-screen shadow-2xl bg-[#F1F5F9]">
+        <div className="w-16 md:w-64 h-screen flex fixed flex-col gap-4 justify-center items-center shadow-2xl bg-[#F1F5F9]">
             <div className="flex flex-col w-full h-3/4">
                 <div className="flex flex-row  justify-start items-center w-full">
 
@@ -66,7 +66,7 @@ export default function TenantSidebar() {
 const tenantSidebarItems = [
     {
         title: "DASHBOARD",
-        href: "/tenant",
+        href: "/tenant/dashboard",
         iconComponent: < LayoutDashboard />
     },
     {

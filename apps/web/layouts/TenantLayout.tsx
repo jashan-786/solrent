@@ -6,7 +6,7 @@ export default function TenantLayoutMain({ children }: { children: ReactNode }) 
         <>
             <div className="flex flex-row">
                 <TenantSidebar />
-                <div className="flex-1 p-2">
+                <div className="flex-1 p-2 ml-16 md:ml-64 overflow-y-scroll">
                     {children}
                 </div>
             </div>
