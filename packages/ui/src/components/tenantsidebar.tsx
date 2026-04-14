@@ -71,7 +71,7 @@ const tenantSidebarItems = [
     },
     {
         title: "MY LEASE",
-        href: "/tenant/myleases",
+        href: "/tenant/leases",
         iconComponent: < ClipboardMinus />
     },
     {
