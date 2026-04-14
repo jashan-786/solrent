@@ -2,7 +2,7 @@ import { ExternalLink, MoreVertical } from "lucide-react";
 
 export default function NFTCard({ item }: any) {
     return (
-        <div className="bg-brand-navy rounded-2xl p-4 flex flex-col gap-4 shadow-xl border border-slate-800">
+        <div className="bg-brand-navy rounded-2xl p-4 flex flex-col gap-4 shadow-xl border bg-[#131B2E]">
             {/* NFT Image Wrapper */}
             <div className="relative aspect-square rounded-xl overflow-hidden bg-linear-to-br from-slate-800 to-brand-navy border border-slate-700/50">
                 <img src={item.image} alt={item.title} className="w-full h-full object-cover" />

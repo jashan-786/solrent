@@ -5,11 +5,11 @@ import { Badge } from "@repo/ui/components/ui/badge";
 
 const PaymentTab = () => {
     return (
-        <div className="max-w-4xl mx-auto p-6 space-y-6 font-sans text-[#1a1c1e]">
+        <div className="p-6 space-y-6 font-sans text-[#1a1c1e]">
 
             {/* SECTION 1: Payment Schedule */}
-            <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-                <div className="p-8 flex justify-between items-center border-b border-gray-50">
+            <div className=" bg-white rounded-[32px]  shadow-sm overflow-hidden">
+                <div className="p-8 bg-surface-secondary  flex justify-between items-center border-b border-gray-50">
                     <h2 className="text-2xl font-bold">Payment Schedule</h2>
                     <Button variant="ghost" className="text-[#3d7a5d] hover:text-[#2d5c46] font-semibold gap-2">
                         <Download className="w-4 h-4" /> Export History
@@ -64,10 +64,11 @@ const PaymentTab = () => {
             </div>
 
             {/* SECTION 2: Payment Journey Timeline */}
-            <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm p-10">
-                <h2 className="text-2xl font-bold mb-10">Payment Journey Timeline</h2>
+            <div className=" bg-white rounded-[32px]  shadow-sm overflow-hidden"><div className="p-8 bg-surface-secondary  flex justify-between items-center border-b border-gray-50">
+                <h2 className="text-2xl font-bold">Payment Journey Timeline</h2>
 
-                <div className="space-y-0">
+            </div>
+                <div className="space-y-0 p-8">
                     {[
                         { title: "September 2023 Payment", sub: "Confirmed on Solana Mainnet • 0x4f...9e2", right: "NFT Minted", date: "OCT 01, 2023", done: true },
                         { title: "October 2023 Payment", sub: "Confirmed on Solana Mainnet • 0x8a...3d4", right: "NFT Minted", date: "NOV 01, 2023", done: true },

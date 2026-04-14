@@ -4,9 +4,9 @@ const StatCard = ({ title, value, subtext, icon: Icon, variant = "light" }: any)
     const isDark = variant === "dark";
 
     return (
-        <div className={`rounded-twelve p-6 shadow-sm border ${isDark
-                ? "bg-brand-navy border-transparent text-white relative overflow-hidden"
-                : "bg-white border-gray-100 text-brand-navy"
+        <div className={`rounded-twelve p-6 shadow-sm border rounded-[12px] ${isDark
+            ? "bg-brand-navy border-transparent text-white relative overflow-hidden"
+            : "bg-white border-gray-100 text-brand-navy"
             }`}>
             {/* Dark variant background decoration */}
             {isDark && (
