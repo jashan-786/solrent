@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Badge, MoreVertical, Plus, Store } from "lucide-react";
 import { Button } from "@repo/ui/components/ui/button";
 import CTAEmptyStateCompnent from "./addbuilding";
+import ViewDetailsButton from "./viewdetails";
 
 
 
@@ -11,10 +12,9 @@ import CTAEmptyStateCompnent from "./addbuilding";
 
 const BuildingCard = ({ building }: { building: Building }) => {
     const occupancyRate = Math.round((building.occupied / building.units) * 100);
-
     return (
-        <Card className=" border-none shadow-sm bg-surface-primary max-w-2xl p-0 gap-0 rounded-xl h-full">
-            <CardContent className="p-0 m-0 rounded-xl" >
+        <Card className=" border-none shadow-sm bg-surface-primary max-w-2xl p-0 gap-0 rounded-xl">
+            <CardContent className="p-0 m-0 rounded-xl h-full" >
                 <div className=" h-full grid grid-cols-1 md:grid-cols-12 gap-2 rounded-xl ">
 
                     {/* Image Section - Takes 4 columns on desktop */}
@@ -61,11 +61,7 @@ const BuildingCard = ({ building }: { building: Building }) => {
                         </div>
 
                         <div className="flex gap-2 mt-2 ">
-                            <Button
-                                className="flex-1 text-sm bg-background-grey hover:bg-slate-200 text-auth-navy font-bold rounded-xl h-12"
-                            >
-                                View Details
-                            </Button>
+                            <ViewDetailsButton building={building} />
                             <Button
                                 variant="outline"
                                 size="icon"
@@ -94,7 +90,7 @@ const BuildingCard = ({ building }: { building: Building }) => {
 
 
 
-const data: Building[] = [
+export const data: Building[] = [
     {
         id: "bld-001",
         img: "/building-landing.png",
@@ -164,9 +160,9 @@ const data: Building[] = [
 
 
 
-export default function buildings() {
+export default function Buildings() {
     return (
-        <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4 mt-3  items-stretch ">
+        <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3 ">
             {data.map((building) => (
                 <BuildingCard key={building.id} building={building} />
             ))}

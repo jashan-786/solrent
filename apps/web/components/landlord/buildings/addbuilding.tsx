@@ -1,16 +1,20 @@
 "use client"
+import { AddPropertyModal } from "@/components/modals/addpropertymodal";
 import { CTAEmptyStateProps } from "@repo/types";
 import { Button } from "@repo/ui/components/ui/button";
 import { Card, CardContent } from "@repo/ui/components/ui/card";
 import { Plus, Store } from "lucide-react";
+import { useState } from "react";
 
 const CTAEmptyState = ({
     title,
     description,
     buttonText,
     onAction,
-    icon
+    icon,
+
 }: CTAEmptyStateProps) => {
+
     return (
         <Card className="border-none shadow-sm bg-surface-primary rounded-3xl overflow-hidden hover:shadow-md transition-shadow group cursor-pointer  max-h-[220px] p-0 m-0" onClick={onAction}>
             <CardContent className=" flex flex-col items-center justify-center text-center h-full m-0 p-0">
@@ -32,20 +36,11 @@ const CTAEmptyState = ({
                 </div>
 
                 {/* Text Section */}
-                <h6 className=" font-heading font-bold text-auth-navy my-1">
-                    {title}
-                </h6>
+
                 <small className="text-text-grey  max-w-md leading-relaxed">
                     {description}
                 </small>
-
-                {/* Minimalist Button (Hidden in image, but essential for UX) */}
-                <Button
-                    variant="link"
-                    className="mt-1 text-auth-navy font-bold hover:no-underline  group-hover:opacity-100 transition-opacity"
-                >
-                    <Plus className=" right-4 w-5 h-5 text-auth-navy" />
-                </Button>
+                <AddPropertyModal />
 
             </CardContent>
         </Card>
@@ -58,7 +53,8 @@ export default function CTAEmptyStateCompnent() {
         title="Add New Property"
         description="Register a new institutional asset to your portfolio."
         buttonText="Get Started"
-        onAction={() => { }}
+        onAction={() => { }} // Placeholder for actual action
+
     // You could pass a custom icon here if needed
     />
 }
