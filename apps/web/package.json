@@ -27,6 +27,7 @@
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.72.1",
     "tailwind-merge": "^3.5.0",
+    "zod-prisma-types": "^3.3.11",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
