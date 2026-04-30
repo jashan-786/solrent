@@ -20,12 +20,12 @@ export default function PropertyHeader({ title, address, image, stats }: Propert
             <div className="flex-1">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h2 className="text-2xl font-bold text-brand-navy">Unit 14B - Skyline Azure</h2>
-                        <p className="flex items-center gap-1 text-text-muted text-sm mt-1">
+                        <h2 className="text-2xl font-bold text-text-950">Unit 14B - Skyline Azure</h2>
+                        <p className="flex items-center gap-1 text-text-500 text-sm mt-1">
                             <MapPin size={14} /> 782 Ocean Drive, Miami FL
                         </p>
                     </div>
-                    <span className="bg-solrent-emerald/20 text-solrent-emerald text-[10px] font-bold px-3 py-1 rounded-sm uppercase tracking-wider">
+                    <span className="bg-secondary-500/20 text-secondary-500 text-[10px] font-bold px-3 py-1 rounded-sm uppercase tracking-wider">
                         Premium Suite
                     </span>
                 </div>
@@ -36,14 +36,14 @@ export default function PropertyHeader({ title, address, image, stats }: Propert
                         { label: "SQ. FOOTAGE", val: "1,450 ft²" },
                         { label: "SECURITY", val: "Smart Lock" }
                     ].map((stat) => (
-                        <div key={stat.label} className="bg-surface-secondary p-3 rounded-lg">
-                            <p className="text-[10px] text-text-muted font-bold uppercase">{stat.label}</p>
-                            <p className="text-sm font-bold text-brand-navy">{stat.val}</p>
+                        <div key={stat.label} className="bg-background-100 p-3 rounded-lg">
+                            <p className="text-[10px] text-text-500 font-bold uppercase">{stat.label}</p>
+                            <p className="text-sm font-bold text-text-950">{stat.val}</p>
                         </div>
                     ))}
                 </div>
 
-                <button className="mt-6 text-solrent-emerald font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+                <button className="mt-6 text-secondary-500 font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all">
                     Request Maintenance <ArrowRight size={16} />
                 </button>
             </div>

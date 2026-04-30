@@ -22,10 +22,10 @@ const StatCard = ({ label, value, icon, iconBg, iconColor }: StatCardProps) => (
     </div>
 );
 
-export default function TenantStats() {
+export default function LeaseStats() {
     const stats = [
         {
-            label: "Total Tenants",
+            label: "Total Leases",
             value: "142",
             icon: <Users size={24} />,
             iconBg: "bg-background-200",
