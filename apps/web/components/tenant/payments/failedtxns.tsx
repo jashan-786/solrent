@@ -1,7 +1,15 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from "@repo/ui/components/ui/button";
-import { FailedTxnsProps } from '@repo/types';
+
+interface FailedTxnsProps {
+    id: number;
+    period: string;
+    amount: string;
+    usd: string;
+    status: string;
+    action: string;
+}
 
 export default function FailedTxns() {
     const failedTxns: FailedTxnsProps[] = [
@@ -75,12 +83,7 @@ const PaymentErrorAlert = () => {
                         Retry Payment
                     </Button>
 
-                    <Button
-                        variant="secondary"
-                        className="flex-1 md:flex-none bg-[#e5e7eb] hover:bg-[#d1d5db] text-[#1a1c1e] font-bold px-8 py-6 rounded-xl text-md transition-colors"
-                    >
-                        Add Funds
-                    </Button>
+
                 </div>
 
             </div>
