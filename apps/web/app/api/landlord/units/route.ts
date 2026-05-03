@@ -1,66 +1,69 @@
-import { getSession } from "@/lib/auth";
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { buildingSchema } from "../../zod";
+import { unitSchema } from "@/app/api/zod";
 
 export async function GET(req: NextRequest) {
-    // left with auth logic
-    const session = await getSession();
-    const landlordId = session?.id;
+    const buildingId = req.nextUrl.searchParams.get("buildingId");
 
-    if (!landlordId) {
+    if (!buildingId) {
         return NextResponse.json({
             success: false,
-            message: "landlordId query parameter is required",
+            message: "buildingId query parameter is required",
         }, { status: 400 });
     }
 
     try {
-        const buildings = await prisma.building.findMany({
+        const units = await prisma.unit.findMany({
             where: {
-                landlordId: landlordId
+                buildingId: buildingId
+            },
+            include: {
+                leases: {
+                    where: { status: "ACTIVE" },
+                    include: { tenant: true }
+                }
             }
         });
 
         return NextResponse.json({
             success: true,
-            buildings,
+            units,
         });
     } catch (error) {
-        console.error("Error fetching buildings:", error);
+        console.error("Error fetching units:", error);
         return NextResponse.json({
             success: false,
-            message: "Error fetching buildings",
+            message: "Error fetching units",
         }, { status: 500 });
     }
 }
 
-
 export async function POST(req: NextRequest) {
-
     try {
         const body = await req.json();
-        const validation = buildingSchema.safeParse(body);
+        const validation = unitSchema.safeParse(body);
+        
         if (!validation.success) {
             return NextResponse.json({
                 success: false,
-                message: "Invalid building data",
+                message: "Invalid unit data",
+                errors: validation.error.format()
             }, { status: 400 });
         }
-        const building = await prisma.building.create({
+        
+        const unit = await prisma.unit.create({
             data: validation.data,
         });
+        
         return NextResponse.json({
             success: true,
-            building,
+            unit,
         });
     } catch (error) {
-        console.error("Error creating building:", error);
+        console.error("Error creating unit:", error);
         return NextResponse.json({
             success: false,
-            message: "Error creating building",
+            message: "Error creating unit",
         }, { status: 500 });
     }
 }
-

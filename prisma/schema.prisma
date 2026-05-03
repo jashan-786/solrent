@@ -47,6 +47,8 @@ model User {
   walletAddress   String?         @unique
   role            UserRole
   preferredCoin   String?         @default("USDC")
+  landlordBuildingId    String?
+  landlordId    String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -56,6 +58,7 @@ model User {
 
   sentMessages      Message[]     @relation("SentMessages")
   receivedMessages  Message[]     @relation("ReceivedMessages")
+  usedInviteCode    InviteCode?   @relation("UserUsedInvite")
 }
 
 model Building {
@@ -71,6 +74,7 @@ model Building {
 
   landlord      User        @relation("LandlordBuildings", fields: [landlordId], references: [id])
   units         Unit[]
+  inviteCodes   InviteCode[]
 }
 
 model Unit {
@@ -87,6 +91,7 @@ model Unit {
 
   building       Building   @relation(fields: [buildingId], references: [id])
   leases         Lease[]
+  inviteCodes    InviteCode[]
 }
 
 model Lease {
@@ -150,4 +155,18 @@ model Message {
 
   sender        User        @relation("SentMessages", fields: [senderId], references: [id])
   receiver      User        @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+model InviteCode {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  buildingId  String
+  unitId      String?  
+  isUsed      Boolean  @default(false)
+  usedById    String?  @unique 
+  createdAt   DateTime @default(now())
+
+  building    Building @relation(fields: [buildingId], references: [id])
+  unit        Unit?    @relation(fields: [unitId], references: [id])
+  usedBy      User?    @relation("UserUsedInvite", fields: [usedById], references: [id])
 }
