@@ -1,14 +1,133 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id                 String         @id @default(cuid())
+  name               String
+  email              String         @unique
+  phone              String?
+  avatarUrl          String?
+  walletAddress      String?        @unique
+  role               UserRole
+  preferredCoin      String?        @default("USDC")
+  landlordBuildingId String?
+  landlordId         String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  landlordBuildings  Building[]     @relation("LandlordBuildings")
+  usedInviteCode     InviteCode?    @relation("UserUsedInvite")
+  tenantLeases       Lease[]        @relation("TenantLeases")
+  receivedMessages   Message[]      @relation("ReceivedMessages")
+  sentMessages       Message[]      @relation("SentMessages")
+  notifications      Notification[]
+}
+
+model Building {
+  id          String       @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  province    String
+  postalCode  String
+  landlordId  String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  landlord    User         @relation("LandlordBuildings", fields: [landlordId], references: [id])
+  inviteCodes InviteCode[]
+  units       Unit[]
+}
+
+model Unit {
+  id          String       @id @default(cuid())
+  buildingId  String
+  unitNumber  String
+  bedrooms    Int
+  bathrooms   Int
+  squareFeet  Int?
+  rentAmount  Float
+  occupied    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  inviteCodes InviteCode[]
+  leases      Lease[]
+  building    Building     @relation(fields: [buildingId], references: [id])
+}
+
+model Lease {
+  id                String      @id @default(cuid())
+  tenantId          String
+  unitId            String
+  monthlyRent       Float
+  depositAmount     Float?
+  stablecoin        String      @default("USDC")
+  startDate         DateTime
+  endDate           DateTime
+  status            LeaseStatus
+  autoPayEnabled    Boolean     @default(false)
+  recurringApproved Boolean     @default(false)
+  leaseDocumentUrl  String?
+  leaseNftMint      String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  tenant            User        @relation("TenantLeases", fields: [tenantId], references: [id])
+  unit              Unit        @relation(fields: [unitId], references: [id])
+  payments          Payment[]
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  leaseId           String
+  amount            Float
+  stablecoin        String
+  dueDate           DateTime
+  paidAt            DateTime?
+  status            PaymentStatus
+  transactionHash   String?
+  nftReceiptMint    String?
+  failureReason     String?
+  recurringApproved Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  lease             Lease         @relation(fields: [leaseId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  createdAt  DateTime @default(now())
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+}
+
+model InviteCode {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  buildingId String
+  unitId     String?
+  isUsed     Boolean  @default(false)
+  usedById   String?  @unique
+  createdAt  DateTime @default(now())
+  building   Building @relation(fields: [buildingId], references: [id])
+  unit       Unit?    @relation(fields: [unitId], references: [id])
+  usedBy     User?    @relation("UserUsedInvite", fields: [usedById], references: [id])
 }
 
 enum UserRole {
@@ -36,137 +155,4 @@ enum NotificationType {
   RENT_DUE
   LEASE_CREATED
   MESSAGE
-}
-
-model User {
-  id              String          @id @default(cuid())
-  name            String
-  email           String          @unique
-  phone           String?
-  avatarUrl       String?
-  walletAddress   String?         @unique
-  role            UserRole
-  preferredCoin   String?         @default("USDC")
-  landlordBuildingId    String?
-  landlordId    String?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  landlordBuildings Building[]    @relation("LandlordBuildings")
-  tenantLeases      Lease[]       @relation("TenantLeases")
-  notifications     Notification[]
-
-  sentMessages      Message[]     @relation("SentMessages")
-  receivedMessages  Message[]     @relation("ReceivedMessages")
-  usedInviteCode    InviteCode?   @relation("UserUsedInvite")
-}
-
-model Building {
-  id            String      @id @default(cuid())
-  name          String
-  address       String
-  city          String
-  province      String
-  postalCode    String
-  landlordId    String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  landlord      User        @relation("LandlordBuildings", fields: [landlordId], references: [id])
-  units         Unit[]
-  inviteCodes   InviteCode[]
-}
-
-model Unit {
-  id            String      @id @default(cuid())
-  buildingId    String
-  unitNumber    String
-  bedrooms      Int
-  bathrooms     Int
-  squareFeet    Int?
-  rentAmount    Float
-  occupied      Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  building       Building   @relation(fields: [buildingId], references: [id])
-  leases         Lease[]
-  inviteCodes    InviteCode[]
-}
-
-model Lease {
-  id                  String          @id @default(cuid())
-  tenantId            String
-  unitId              String
-  monthlyRent         Float
-  depositAmount       Float?
-  stablecoin          String          @default("USDC")
-  startDate           DateTime
-  endDate             DateTime
-  status              LeaseStatus
-  autoPayEnabled      Boolean         @default(false)
-  recurringApproved   Boolean         @default(false)
-  leaseDocumentUrl    String?
-  leaseNftMint        String?
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-
-  tenant              User            @relation("TenantLeases", fields: [tenantId], references: [id])
-  unit                Unit            @relation(fields: [unitId], references: [id])
-  payments            Payment[]
-}
-
-model Payment {
-  id                  String          @id @default(cuid())
-  leaseId             String
-  amount              Float
-  stablecoin          String
-  dueDate             DateTime
-  paidAt              DateTime?
-  status              PaymentStatus
-  transactionHash     String?
-  nftReceiptMint      String?
-  failureReason       String?
-  recurringApproved   Boolean         @default(false)
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-
-  lease               Lease           @relation(fields: [leaseId], references: [id])
-}
-
-model Notification {
-  id            String              @id @default(cuid())
-  userId        String
-  title         String
-  message       String
-  type          NotificationType
-  isRead        Boolean             @default(false)
-  createdAt     DateTime            @default(now())
-
-  user          User                @relation(fields: [userId], references: [id])
-}
-
-model Message {
-  id            String      @id @default(cuid())
-  senderId      String
-  receiverId    String
-  content       String
-  createdAt     DateTime    @default(now())
-
-  sender        User        @relation("SentMessages", fields: [senderId], references: [id])
-  receiver      User        @relation("ReceivedMessages", fields: [receiverId], references: [id])
-}
-
-model InviteCode {
-  id          String   @id @default(cuid())
-  code        String   @unique
-  buildingId  String
-  unitId      String?  
-  isUsed      Boolean  @default(false)
-  usedById    String?  @unique 
-  createdAt   DateTime @default(now())
-
-  building    Building @relation(fields: [buildingId], references: [id])
-  unit        Unit?    @relation(fields: [unitId], references: [id])
-  usedBy      User?    @relation("UserUsedInvite", fields: [usedById], references: [id])
 }

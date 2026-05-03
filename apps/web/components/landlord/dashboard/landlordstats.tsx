@@ -1,12 +1,42 @@
+"use client";
+
+import useSWR from "swr";
+import axios from "axios";
 import { Banknote, DoorOpen, ClipboardList, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
 
+const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+
 export const LandlordStats = () => {
+    const { data, error, isLoading } = useSWR("/api/landlord/dashboard", fetcher);
+
+    if (isLoading) return <StatsSkeleton />;
+
     const stats = [
-        { title: "Total Rent", value: "$437,600", icon: Banknote, trend: "+12.5%", color: "text-secondary-500" },
-        { title: "Occupancy", value: "92.8%", icon: DoorOpen, color: "text-text-950" },
-        { title: "Pending Actions", value: "14", icon: ClipboardList, color: "text-destructive", alert: true },
-        { title: "Active Leases", value: "89", icon: FileText, color: "text-text-950" },
+        { 
+            title: "Total Revenue", 
+            value: data?.totalRevenue ? `$${data.totalRevenue.toLocaleString()}` : "$0", 
+            icon: Banknote, 
+            color: "text-secondary-500" 
+        },
+        { 
+            title: "Occupancy Rate", 
+            value: data?.occupancyRate ? `${data.occupancyRate.toFixed(1)}%` : "0%", 
+            icon: DoorOpen, 
+            color: "text-text-950" 
+        },
+        { 
+            title: "Total Units", 
+            value: data?.totalUnits || "0", 
+            icon: ClipboardList, 
+            color: "text-primary-600" 
+        },
+        { 
+            title: "Active Leases", 
+            value: data?.activeLeasesCount || "0", 
+            icon: FileText, 
+            color: "text-text-950" 
+        },
     ];
 
     return (
@@ -21,14 +51,25 @@ export const LandlordStats = () => {
                     </CardHeader>
                     <CardContent>
                         <h4 className="text-text-950">{stat.value}</h4>
-                        {stat.trend && (
-                            <p className="text-tiny font-medium text-secondary-500 mt-1">
-                                {stat.trend} <span className="text-text-500">vs last month</span>
-                            </p>
-                        )}
                     </CardContent>
                 </Card>
             ))}
         </div>
     );
 };
+
+const StatsSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="bg-card border-none shadow-sm h-32 animate-pulse">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <div className="h-3 w-20 bg-background-200 rounded" />
+                    <div className="h-4 w-4 bg-background-200 rounded-full" />
+                </CardHeader>
+                <CardContent>
+                    <div className="h-8 w-28 bg-background-200 rounded mt-2" />
+                </CardContent>
+            </Card>
+        ))}
+    </div>
+);

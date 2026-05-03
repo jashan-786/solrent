@@ -3,21 +3,58 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@repo/ui/components/ui/card";
 import { Button } from "@repo/ui/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/ui/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@repo/ui/components/ui/tabs";
 import { Wallet, User, Building2 } from "lucide-react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useAuth } from "@/store/useAuth";
+import axios from "axios";
+import bs58 from "bs58";
 
 export const LoginForm = () => {
+    const { publicKey, signMessage, connected, disconnect } = useWallet();
+    const { setVisible } = useWalletModal();
+    const { setUser } = useAuth();
+    
     const [isLoading, setIsLoading] = useState(false);
-    const [role, setRole] = useState("TENANT");
+    const [error, setError] = useState<string | null>(null);
 
     const handleLogin = async () => {
-        setIsLoading(true);
-        // Add SIWS logic here. The API returns user.role, so in reality, we don't need tabs here!
-        // But for mock UI purposes, we use tabs to determine the redirect.
-        setTimeout(() => {
+        if (!connected || !publicKey || !signMessage) {
+            setVisible(true);
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // 1. Prepare message
+            const messageText = `Sign this message to authenticate with Solrent.\n\nWallet: ${publicKey.toBase58()}\nTimestamp: ${Date.now()}`;
+            const messageEncoded = new TextEncoder().encode(messageText);
+
+            // 2. Sign message
+            const signature = await signMessage(messageEncoded);
+            const signatureArray = Array.from(signature);
+
+            // 3. Send to backend
+            const res = await axios.post("/api/auth/login", {
+                walletAddress: publicKey.toBase58(),
+                signature: signatureArray,
+                message: messageText
+            });
+
+            if (res.data.success) {
+                setUser(res.data.user);
+                // Redirect based on role
+                window.location.href = res.data.user.role === "LANDLORD" ? "/landlord/dashboard" : "/tenant/dashboard";
+            }
+        } catch (err: any) {
+            console.error("Login failed:", err);
+            setError(err.response?.data?.message || "Authentication failed. Make sure you have an account.");
+        } finally {
             setIsLoading(false);
-            window.location.href = role === "LANDLORD" ? "/landlord/dashboard" : "/tenant/dashboard";
-        }, 2000);
+        }
     };
 
     return (
@@ -32,16 +69,11 @@ export const LoginForm = () => {
             </CardHeader>
             <CardContent className="space-y-6">
                 
-                <Tabs defaultValue="TENANT" onValueChange={setRole} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="TENANT" className="flex items-center gap-2">
-                            <User size={16} /> Tenant
-                        </TabsTrigger>
-                        <TabsTrigger value="LANDLORD" className="flex items-center gap-2">
-                            <Building2 size={16} /> Landlord
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
+                {error && (
+                    <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-lg text-center">
+                        {error}
+                    </div>
+                )}
 
                 <div className="flex flex-col gap-4">
                     <Button 
@@ -50,14 +82,23 @@ export const LoginForm = () => {
                         className="w-full py-6 text-base font-bold bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center gap-2"
                     >
                         {isLoading ? (
-                            <span className="animate-pulse">Connecting to Wallet...</span>
+                            <span className="animate-pulse">Awaiting Signature...</span>
                         ) : (
                             <>
                                 <Wallet size={20} />
-                                Connect Wallet to Sign In
+                                {connected ? "Sign Message to Login" : "Connect Wallet to Sign In"}
                             </>
                         )}
                     </Button>
+
+                    {connected && (
+                        <button 
+                            onClick={() => disconnect()} 
+                            className="text-xs text-text-400 hover:text-text-600 underline"
+                        >
+                            Disconnect {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
+                        </button>
+                    )}
                 </div>
                 <div className="text-center text-sm text-text-500 pt-4 border-t border-background-200">
                     Don't have an account? <a href="/register" className="text-accent-600 font-bold hover:underline">Sign up</a>
