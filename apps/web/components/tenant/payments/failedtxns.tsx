@@ -57,20 +57,20 @@ const PaymentErrorAlert = () => {
     return (
         <div className="w-full flex justify-center p-4">
             {/* Main Alert Container */}
-            <div className="max-w-4xl w-full bg-[#fdf2f2] border border-[#fde8e8] rounded-[24px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+            <div className="max-w-4xl w-full bg-destructive/10 border border-destructive/20 rounded-[24px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
 
                 {/* Left Section: Icon and Text */}
                 <div className="flex items-center gap-5">
                     {/* Circular Alert Icon Container */}
-                    <div className="flex-shrink-0 w-12 h-12 bg-[#fde8e8] rounded-full flex items-center justify-center">
-                        <AlertTriangle className="w-6 h-6 text-[#b91c1c] fill-[#b91c1c]/10" />
+                    <div className="flex-shrink-0 w-12 h-12 bg-destructive/20 rounded-full flex items-center justify-center">
+                        <AlertTriangle className="w-6 h-6 text-destructive fill-destructive/10" />
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <h3 className="text-[#1a1c1e] font-bold text-lg leading-tight">
+                        <h3 className="text-text-900 font-bold text-lg leading-tight">
                             Payment Failed: November Rent
                         </h3>
-                        <p className="text-[#6b7280] text-sm font-medium">
+                        <p className="text-text-500 text-sm font-medium">
                             Reason: Insufficient SOL balance in connected wallet (x82...3f).
                         </p>
                     </div>
@@ -78,7 +78,7 @@ const PaymentErrorAlert = () => {
 
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <Button
-                        className="flex-1 md:flex-none bg-[#b91c1c] hover:bg-[#991b1b] text-white font-bold px-8 py-6 rounded-xl text-md transition-colors"
+                        className="flex-1 md:flex-none bg-destructive hover:bg-destructive/90 text-white font-bold px-8 py-6 rounded-xl text-md transition-colors"
                     >
                         Retry Payment
                     </Button>
