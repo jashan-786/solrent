@@ -72,8 +72,12 @@ export async function POST(req: NextRequest) {
 
         return response;
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error logging in:", error);
-        return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
+        return NextResponse.json({ 
+            success: false, 
+            message: "Server error", 
+            error: error instanceof Error ? error.message : String(error) 
+        }, { status: 500 });
     }
 }

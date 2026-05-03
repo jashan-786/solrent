@@ -22,9 +22,8 @@ export async function GET(req: NextRequest) {
                             include: { building: true }
                         },
                         payments: {
-                            where: { status: "UPCOMING" },
-                            orderBy: { dueDate: 'asc' },
-                            take: 1 // Get the very next payment due
+                            orderBy: { dueDate: 'desc' },
+                            take: 10 // Get last 10 payments
                         }
                     }
                 }
@@ -36,7 +35,9 @@ export async function GET(req: NextRequest) {
         }
 
         const activeLease = tenant.tenantLeases.length > 0 ? tenant.tenantLeases[0] : null;
-        const nextPayment = activeLease?.payments.length ? activeLease.payments[0] : null;
+        const allPayments = activeLease?.payments || [];
+        const nextPayment = allPayments.find(p => p.status === "UPCOMING" || p.status === "OVERDUE");
+        const pastPayments = allPayments.filter(p => p.status === "COMPLETED" || p.status === "FAILED");
 
         return NextResponse.json({
             success: true,
@@ -54,8 +55,10 @@ export async function GET(req: NextRequest) {
                     startDate: activeLease.startDate,
                     endDate: activeLease.endDate,
                     unit: activeLease.unit,
+                    autoPayEnabled: activeLease.autoPayEnabled,
                 } : null,
-                nextPayment: nextPayment
+                nextPayment: nextPayment,
+                pastPayments: pastPayments
             }
         }, { status: 200 });
 

@@ -15,7 +15,7 @@ export default function TenantHeader() {
                 </p>
             </div>
 
-            {/* Right Side: Action Button */}
+
             <InviteTenantModal />
         </div>
     );

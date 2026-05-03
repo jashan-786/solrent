@@ -51,7 +51,7 @@ export const LoginForm = () => {
             }
         } catch (err: any) {
             console.error("Login failed:", err);
-            setError(err.response?.data?.message || "Authentication failed. Make sure you have an account.");
+            setError(err.response?.data?.error || err.response?.data?.message || "Authentication failed. Make sure you have an account.");
         } finally {
             setIsLoading(false);
         }

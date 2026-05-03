@@ -15,25 +15,25 @@ export const LandlordStats = () => {
     const stats = [
         { 
             title: "Total Revenue", 
-            value: data?.totalRevenue ? `$${data.totalRevenue.toLocaleString()}` : "$0", 
+            value: data?.stats?.totalRent ? `$${data.stats.totalRent.toLocaleString()}` : "$0", 
             icon: Banknote, 
             color: "text-secondary-500" 
         },
         { 
             title: "Occupancy Rate", 
-            value: data?.occupancyRate ? `${data.occupancyRate.toFixed(1)}%` : "0%", 
+            value: data?.stats?.occupancyRate ? `${data.stats.occupancyRate}%` : "0%", 
             icon: DoorOpen, 
             color: "text-text-950" 
         },
         { 
             title: "Total Units", 
-            value: data?.totalUnits || "0", 
+            value: data?.stats?.totalUnits || "0", 
             icon: ClipboardList, 
             color: "text-primary-600" 
         },
         { 
             title: "Active Leases", 
-            value: data?.activeLeasesCount || "0", 
+            value: data?.stats?.activeLeases || "0", 
             icon: FileText, 
             color: "text-text-950" 
         },

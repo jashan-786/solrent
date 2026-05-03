@@ -18,30 +18,42 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 { status: 400 }
             )
 
-        const building = await prisma.building.findUnique(
-            {
-                where: {
-                    id: id
+        const building = await prisma.building.findUnique({
+            where: { id },
+            include: {
+                _count: { select: { units: true } },
+                units: {
+                    select: {
+                        occupied: true,
+                        rentAmount: true,
+                    }
                 }
-            })
+            }
+        });
 
-        if (!building)
-            return NextResponse.json(
-                {
-                    success: false,
-                    message: "incorrect  building id"
-                },
-                { status: 400 }
-            )
+        if (!building) {
+            return NextResponse.json({
+                success: false,
+                message: "Building not found"
+            }, { status: 404 });
+        }
 
-        else
-            return NextResponse.json(
-                {
-                    success: true,
-                    building
-                },
-                { status: 200 }
-            )
+        const totalUnits = building._count.units;
+        const occupiedUnits = building.units.filter(u => u.occupied).length;
+        const monthlyYield = building.units.reduce((sum, u) => sum + u.rentAmount, 0);
+
+        const mappedBuilding = {
+            ...building,
+            units: totalUnits,
+            occupied: occupiedUnits,
+            monthlyyield: monthlyYield,
+            img: "/building-landing.png"
+        };
+
+        return NextResponse.json({
+            success: true,
+            building: mappedBuilding
+        }, { status: 200 });
 
     } catch (error) {
         console.log("Error fetching the building")

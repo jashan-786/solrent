@@ -25,7 +25,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                         <Badge className="bg-sol-emerald/10 text-sol-emerald border-none">Active Asset</Badge>
                     </h2>
                     <p className="text-text-grey text-sm flex items-center gap-1">
-                        <MapPin size={14} /> {building.address}, {building.city}, {building.state}
+                        <MapPin size={14} /> {building.address}, {building.city}, {building.country}
                     </p>
                 </div>
             </div>
