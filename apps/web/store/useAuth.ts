@@ -52,8 +52,8 @@ export const useAuth = create<AuthState>((set) => ({
             set({ user: null, isAuthenticated: false });
             window.location.href = '/login';
         } catch (error) {
-            console.error("Logout failed", error);
-            // Even if API fails, clear local state
+            
+            
             set({ user: null, isAuthenticated: false });
             window.location.href = '/login';
         }

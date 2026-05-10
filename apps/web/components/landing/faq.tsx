@@ -47,7 +47,7 @@ const CommonQuestions = () => {
     ];
 
     return (
-        <div className="max-w-3xl mx-auto px-4 py-16 font-sans">
+        <div id="faq" className="max-w-3xl mx-auto px-4 py-16 font-sans">
             <div className="text-center mb-12">
                 <h2 className="text-4xl font-bold text-text-900 mb-4">
                     Common Questions

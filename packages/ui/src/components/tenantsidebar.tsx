@@ -1,8 +1,11 @@
-"use client";
+"use client"
 import { Banknote, ClipboardMinus, FileBox, LayoutDashboard, LogIn, LogOut, Settings, Home, Zap } from "lucide-react";
-
 import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
+
 export default function TenantSidebar() {
+    const pathname = usePathname();
+
     return (
         <div className="w-16 md:w-64 h-screen flex fixed flex-col gap-4 justify-center items-center rounded-r-2xl border-r border-background-200 shadow-xl bg-background-50 z-50">
             <div className="flex flex-col w-full h-3/4">
@@ -19,54 +22,67 @@ export default function TenantSidebar() {
                         </span>
                     </div>
                 </div>
-                {tenantSidebarItems.map((item) => (
-                    <motion.div
-                        key={item.title}
-                        whileHover="hover"
-                        className="w-full"
-                    >
-                        <a href={item.href}>
-                            <motion.div
-                                variants={{
-                                    hover: {
-                                        scale: 1.05,
-                                        transition: { type: "spring", stiffness: 400, damping: 20 }
-                                    }
-                                }}
-                                className="flex flex-row gap-3 justify-start items-center w-full p-4 rounded-twelve transition-colors duration-200 hover:bg-solrent-surface/50"
-                            >
+                {tenantSidebarItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <motion.div
+                            key={item.title}
+                            whileHover="hover"
+                            className="w-full px-2"
+                        >
+                            <a href={item.href}>
                                 <motion.div
-                                    variants={{ hover: { color: "var(--color-accent-500)" } }}
-                                    className="text-text-500"
+                                    variants={{
+                                        hover: {
+                                            scale: 1.02,
+                                            transition: { type: "spring", stiffness: 400, damping: 20 }
+                                        }
+                                    }}
+                                    className={`flex flex-row gap-3 justify-start items-center w-full p-4 rounded-xl transition-all duration-300 ${
+                                        isActive 
+                                        ? 'bg-accent-500/10 border-l-4 border-accent-500 text-accent-600 shadow-[0_0_15px_rgba(110,89,255,0.1)]' 
+                                        : 'hover:bg-background-100 text-text-500'
+                                    }`}
                                 >
-                                    {item.iconComponent}
-                                </motion.div>
+                                    <div className={`${isActive ? 'text-accent-500' : 'text-inherit opacity-70 group-hover:opacity-100 transition-opacity'}`}>
+                                        {item.iconComponent}
+                                    </div>
 
-                                <motion.div
-                                    variants={{ hover: { color: "var(--color-accent-500)" } }}
-                                    className="hidden md:inline text-text-600 font-bold text-sm tracking-wide"
-                                >
-                                    {item.title}
+                                    <div className={`hidden md:inline font-black text-[11px] tracking-[0.1em] ${isActive ? 'text-accent-700' : 'text-inherit opacity-70'}`}>
+                                        {item.title}
+                                    </div>
                                 </motion.div>
-                            </motion.div>
-                        </a>
-                    </motion.div>
-                ))}
+                            </a>
+                        </motion.div>
+                    );
+                })}
             </div>
             <div className="flex flex-row gap-2 justify-start items-center w-full h-1/4 p-4 ">
-
-                <a href="/tenant/logout">
-                    <div className="flex flex-row gap-3 p-4 justify-start items-center w-full hover:bg-background-200/50 rounded-xl transition-all text-text-500 hover:text-secondary-500">
-                        <LogOut />
-                        <div className="hidden md:inline font-bold text-sm ">LOGOUT</div>
-                    </div>
-                </a>
+                <motion.div
+                    whileHover="hover"
+                    className="w-full px-2"
+                >
+                    <a href="/tenant/logout">
+                        <motion.div
+                            variants={{
+                                hover: {
+                                    scale: 1.02,
+                                    transition: { type: "spring", stiffness: 400, damping: 20 }
+                                }
+                            }}
+                            className="flex flex-row gap-3 justify-start items-center w-full p-4 rounded-xl transition-all duration-300 hover:bg-destructive/10 text-text-500 hover:text-destructive"
+                        >
+                            <div className="opacity-70 group-hover:opacity-100 transition-opacity">
+                                <LogOut />
+                            </div>
+                            <div className="hidden md:inline font-black text-[11px] tracking-[0.1em] opacity-70">LOGOUT</div>
+                        </motion.div>
+                    </a>
+                </motion.div>
             </div>
         </div>
     );
 }
-
-
 
 const tenantSidebarItems = [
     {

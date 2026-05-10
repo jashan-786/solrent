@@ -1,22 +1,29 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { verifyJWT } from '@/lib/auth'
+import { isDevApiBypassAuthorized } from '@/lib/dev-api-auth'
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')?.value
+  const pathname = request.nextUrl.pathname
 
-  // Check if it's an API route (excluding auth routes)
-  const isApiRoute = request.nextUrl.pathname.startsWith('/api/') && !request.nextUrl.pathname.startsWith('/api/auth');
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/admin') || isApiRoute;
+  const isApiRoute = pathname.startsWith('/api/') && !pathname.startsWith('/api/auth');
+  const isDevApiRoute = pathname.startsWith('/api/dev/')
+  const devApiBypass = isDevApiRoute && isDevApiBypassAuthorized(request)
 
-  // 1. If no token and trying to access protected paths
+  const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || isApiRoute;
+
+  if (!token && isApiRoute && isDevApiRoute && devApiBypass) {
+    return NextResponse.next()
+  }
+
   if (!token && isProtectedRoute) {
     if (isApiRoute) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   if (token) {
-    // 2. Verify token validity
+    
     const payload = await verifyJWT(token)
     
     if (!payload && isProtectedRoute) {
@@ -24,13 +31,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // 3. Optional: Role-based access
-    if (payload && (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/api/landlord')) && payload.role !== 'LANDLORD') {
+    if (payload && (pathname.startsWith('/admin') || pathname.startsWith('/api/landlord')) && payload.role !== 'LANDLORD') {
       if (isApiRoute) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     
-    if (payload && request.nextUrl.pathname.startsWith('/api/tenant') && payload.role !== 'TENANT') {
+    if (payload && pathname.startsWith('/api/tenant') && payload.role !== 'TENANT') {
       if (isApiRoute) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
@@ -39,7 +45,6 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// Configure which routes run through middleware
 export const config = {
   matcher: ['/dashboard/:path*', '/admin/:path*', '/api/:path*'],
 }

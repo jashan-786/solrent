@@ -5,7 +5,7 @@ import InviteTenantModal from "@/components/modals/invitetenant";
 export default function TenantHeader() {
     return (
         <div className="flex flex-col gap-4 p-8 sm:flex-row sm:items-center sm:justify-between">
-            {/* Left Side: Title and Description */}
+            
             <div className="space-y-1">
                 <h1 className="text-4xl font-bold tracking-tight text-slate-900">
                     Tenants
@@ -14,7 +14,6 @@ export default function TenantHeader() {
                     Manage occupancy and lease agreements across your portfolio.
                 </p>
             </div>
-
 
             <InviteTenantModal />
         </div>

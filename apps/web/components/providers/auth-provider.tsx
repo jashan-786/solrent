@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { checkSession } = useAuth();
 
     useEffect(() => {
-        // Only run on client mount
+        
         checkSession();
     }, []);
 

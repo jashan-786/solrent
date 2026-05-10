@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import {
-    UserPlus, Copy, Check, Loader2
+    UserPlus, Copy, Check, Loader2, ShieldCheck
 } from "lucide-react";
 import {
     Dialog, DialogContent, DialogDescription, DialogHeader,
@@ -14,9 +14,12 @@ import useSWR from "swr";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
-export default function InviteTenantModal() {
+export default function InviteTenantModal({ isVerified = true }: { isVerified?: boolean }) {
     const { data: buildingsData } = useSWR("/api/landlord/buildings", fetcher);
     const [selectedBuilding, setSelectedBuilding] = useState<string>("");
+    const [selectedUnit, setSelectedUnit] = useState<string>("");
+    const { data: unitsData } = useSWR(selectedBuilding ? `/api/landlord/units?buildingId=${selectedBuilding}` : null, fetcher);
+    
     const [inviteCode, setInviteCode] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -27,10 +30,11 @@ export default function InviteTenantModal() {
         try {
             const res = await axios.post("/api/landlord/invite-codes", {
                 buildingId: selectedBuilding,
+                unitId: selectedUnit || null
             });
             setInviteCode(res.data.inviteCode);
         } catch (e) {
-            console.error("Failed to generate invite code", e);
+            
         } finally {
             setLoading(false);
         }
@@ -60,13 +64,26 @@ export default function InviteTenantModal() {
                     </DialogDescription>
                 </DialogHeader>
 
-                {!inviteCode ? (
+                {!isVerified ? (
+                    <div className="mt-6 p-6 bg-amber-50 border border-amber-200 rounded-2xl space-y-4">
+                        <div className="flex items-center gap-2 text-amber-700 font-bold">
+                            <ShieldCheck className="h-5 w-5" />
+                            Action Required
+                        </div>
+                        <p className="text-sm text-amber-600 leading-relaxed">
+                            Your wallet must be verified before you can invite tenants. Please complete your wallet setup on the dashboard to initialize your USDC account.
+                        </p>
+                    </div>
+                ) : !inviteCode ? (
                     <div className="space-y-6 mt-4">
                         <div className="space-y-2">
                             <label className="text-xs font-bold uppercase tracking-widest text-text-400">Select Property</label>
                             <select 
                                 value={selectedBuilding} 
-                                onChange={(e) => setSelectedBuilding(e.target.value)}
+                                onChange={(e) => {
+                                    setSelectedBuilding(e.target.value);
+                                    setSelectedUnit("");
+                                }}
                                 className="w-full h-12 rounded-xl bg-background-100 border-none px-4 text-primary-900 font-bold focus:ring-2 focus:ring-secondary-500 transition-all outline-none cursor-pointer"
                             >
                                 <option value="">Choose a building...</option>
@@ -75,6 +92,22 @@ export default function InviteTenantModal() {
                                 ))}
                             </select>
                         </div>
+
+                        {selectedBuilding && (
+                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                                <label className="text-xs font-bold uppercase tracking-widest text-text-400">Select Unit (Optional)</label>
+                                <select 
+                                    value={selectedUnit} 
+                                    onChange={(e) => setSelectedUnit(e.target.value)}
+                                    className="w-full h-12 rounded-xl bg-background-100 border-none px-4 text-primary-900 font-bold focus:ring-2 focus:ring-secondary-500 transition-all outline-none cursor-pointer"
+                                >
+                                    <option value="">All Units / General Invite</option>
+                                    {unitsData?.units?.map((u: any) => (
+                                        <option key={u.id} value={u.id}>{u.unitNumber} (${u.rentAmount})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
                         <Button 
                             onClick={handleGenerate} 

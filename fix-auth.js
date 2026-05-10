@@ -35,7 +35,7 @@ for (const file of files) {
     changed = true;
   }
 
-  // Also replace validation.data usage for landlordId
+  
   if (content.includes('validation.data') && content.includes('landlordId')) {
     content = content.replace(/const {([^}]*)landlordId([^}]*)} = validation\.data;/, 'const session = await getSession();\n        const landlordId = session?.id;\n        const {$1 $2} = validation.data;');
     changed = true;
@@ -46,6 +46,6 @@ for (const file of files) {
       content = 'import { getSession } from "@/lib/auth";\n' + content;
     }
     fs.writeFileSync(file, content, 'utf8');
-    console.log('Fixed', file);
+    
   }
 }

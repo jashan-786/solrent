@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
 
         const { userId, walletAddress } = validation.data;
 
-        // Check if the wallet address is already linked to another account
         const existingWallet = await prisma.user.findUnique({
             where: { walletAddress }
         });
@@ -34,7 +33,6 @@ export async function POST(req: NextRequest) {
             }, { status: 409 });
         }
 
-        // Update the user with the new wallet address
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: { walletAddress },
@@ -48,7 +46,7 @@ export async function POST(req: NextRequest) {
         }, { status: 200 });
 
     } catch (error) {
-        console.error("Error connecting wallet:", error);
+        
         return NextResponse.json({ success: false, message: "Error connecting wallet" }, { status: 500 });
     }
 }

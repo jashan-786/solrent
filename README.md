@@ -1,159 +1,101 @@
-# Turborepo starter
+# SolRent 🏠⛓️
 
-This Turborepo starter is maintained by the Turborepo core team.
+SolRent is a decentralized property management platform built on the Solana blockchain. It automates rent collection, simplifies lease management, and provides NFT-based rental receipts, offering a transparent, efficient, and cryptographically secure solution for both landlords and tenants.
 
-## Using this example
+![SolRent Landing Page](https://via.placeholder.com/1200x600?text=SolRent+Dashboard+Preview)
 
-Run the following command:
+## 🚀 Key Features
 
-```sh
-npx create-turbo@latest
+### For Landlords
+- **Automated Revenue**: Smart contracts automatically process rent payments in USDC.
+- **Real-time Analytics**: track occupancy rates, revenue trends, and payment health across multiple buildings.
+- **Simplified Leasing**: Create and manage on-chain leases with integrated document storage.
+- **Tenant Management**: Invite tenants, track history, and manage unit assignments effortlessly.
+
+### For Tenants
+- **Auto-Pay**: Set it and forget it. Authorize smart contracts to handle rent payments automatically.
+- **NFT Receipts**: Receive unique, collectible NFTs for every successful rent payment—building your on-chain rental reputation.
+- **Transparent History**: View all past payments and lease terms directly on the blockchain.
+- **Secure Access**: Sign in with your Solana wallet—no passwords, just cryptography.
+
+## 🛠️ Tech Stack
+
+- **Monorepo**: [Turborepo](https://turbo.build/)
+- **Blockchain**: [Solana](https://solana.com/) (Anchor Framework)
+- **Frontend**: [Next.js 16](https://nextjs.org/) (App Router), [React 19](https://react.dev/)
+- **Styling**: [TailwindCSS 4](https://tailwindcss.com/), [Framer Motion](https://www.framer.com/motion/)
+- **Database**: [Prisma](https://www.prisma.io/) with PostgreSQL
+- **Storage**: [Supabase](https://supabase.com/) (Lease documents & Storage)
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/), [SWR](https://swr.vercel.app/)
+- **Authentication**: JWT (jose) with Solana Wallet signature verification
+
+## 📦 Project Structure
+
+```text
+.
+├── apps
+│   └── web                 # Next.js 16 Application
+├── packages
+│   ├── anchor              # Solana Smart Contract (IDL, types, helper functions)
+│   ├── ui                  # Shared React Component Library (TailwindCSS)
+│   ├── typescript-config   # Shared TS configurations
+│   ├── eslint-config       # Shared ESLint configurations
+│   └── tailwind-config     # Shared Tailwind configurations
 ```
 
-## What's inside?
+## ⚙️ Getting Started
 
-This Turborepo includes the following packages/apps:
+### Prerequisites
+- Node.js 20+ 
+- pnpm 9+
+- Solana CLI & Anchor (for contract development)
+- PostgreSQL database
 
-### Apps and Packages
+### Installation
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-repo/solrent.git
+   cd solrent
+   ```
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+2. Install dependencies:
+   ```sh
+   pnpm install
+   ```
 
-### Utilities
+3. Set up environment variables:
+   Create a `.env` file in `apps/web/` and add the necessary variables:
+   ```env
+   DATABASE_URL="postgresql://..."
+   NEXT_PUBLIC_SOLANA_RPC_URL="https://api.devnet.solana.com"
+   NEXT_PUBLIC_USDC_DEVNET_MINT="4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
+   SUPABASE_URL="https://..."
+   SUPABASE_SERVICE_ROLE_KEY="..."
+   JWT_SECRET="..."
+   ```
 
-This Turborepo has some additional tools already setup for you:
+4. Initialize the database:
+   ```sh
+   pnpm --filter web prisma db push
+   ```
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+5. Run the development server:
+   ```sh
+   pnpm dev
+   ```
 
-### Build
+## 🔐 Security & Blockchain
 
-To build all apps and packages, run the following command:
+SolRent leverages Solana's high-speed, low-cost infrastructure to ensure that rent payments are settled instantly and transparently.
+- **PDAs (Program Derived Addresses)**: Each lease and vault is secured via deterministic PDAs.
+- **USDC Payments**: All transactions use native USDC for price stability.
+- **Non-Custodial**: Users interact directly with smart contracts via their own wallets.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## 📄 License
 
-```sh
-cd my-turborepo
-turbo build
-```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Built with ❤️ for the Solana Ecosystem.

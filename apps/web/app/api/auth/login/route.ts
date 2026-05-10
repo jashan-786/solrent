@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
 
         const { walletAddress, signature, message } = validation.data;
 
-        // 1. Verify User Exists First
         const user = await prisma.user.findUnique({
             where: { walletAddress }
         });
@@ -31,7 +30,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Account not found. Please enter an Invitation Code to register." }, { status: 404 });
         }
 
-        // 2. Verify Signature (SIWS)
         const signatureUint8 = new Uint8Array(signature);
         const messageUint8 = new TextEncoder().encode(message);
         const pubKeyUint8 = bs58.decode(walletAddress);
@@ -41,7 +39,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Invalid signature" }, { status: 401 });
         }
 
-        // 3. Generate a session cookie (JWT)
         const token = await signJWT({
             id: user.id,
             walletAddress: user.walletAddress!,
@@ -49,7 +46,6 @@ export async function POST(req: NextRequest) {
             buildingId: user.landlordBuildingId
         });
 
-        // Set the cookie on the response
         const response = NextResponse.json({ 
             success: true, 
             message: "Login successful", 
@@ -73,7 +69,7 @@ export async function POST(req: NextRequest) {
         return response;
 
     } catch (error: any) {
-        console.error("Error logging in:", error);
+        
         return NextResponse.json({ 
             success: false, 
             message: "Server error", 

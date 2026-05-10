@@ -21,7 +21,7 @@ export default function Page() {
     if (error || !data?.success) return (
         <div className="p-8 text-center text-destructive">
             <h2 className="text-xl font-bold text-primary-900">Failed to load property</h2>
-            <p className="text-text-500 mt-2">The requested property could not be found or you do not have permission to view it.</p>
+            <p className="text-text-500 mt-2">{data?.message || error?.message || "The requested property could not be found."}</p>
         </div>
     );
 

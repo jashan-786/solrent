@@ -1,7 +1,5 @@
-export default function TenantDashboard() {
-    return (
-        <div>
-            <h1>Tenant Dashboard</h1>
-        </div>
-    );
-}   
+import { redirect } from "next/navigation";
+
+export default function TenantPage() {
+    redirect("/tenant/dashboard");
+}

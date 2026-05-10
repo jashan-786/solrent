@@ -37,18 +37,18 @@ export function AddPropertyModal() {
                 province: state,
                 postalCode: zip
             });
-            // Trigger refresh for all building data
+            
             mutate("/api/landlord/buildings");
             mutate("/api/landlord/dashboard");
             setOpen(false);
-            // Reset form
+            
             setName("");
             setAddress("");
             setCity("");
             setState("");
             setZip("");
         } catch (error) {
-            console.error("Failed to add property", error);
+            
         } finally {
             setLoading(false);
         }

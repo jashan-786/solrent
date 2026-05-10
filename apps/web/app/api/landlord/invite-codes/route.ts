@@ -2,14 +2,15 @@ import { getSession } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { getStablecoinMint } from "@repo/anchor";
 
 const generateCodeSchema = z.object({
-    landlordId: z.string().cuid(),
-    buildingId: z.string().cuid(),
-    unitId: z.string().cuid().optional(),
+    buildingId: z.string(),
+    unitId: z.string().optional().nullable(),
 });
 
-// Helper function to generate a random code like "BLD-8X2A"
 function generateRandomCode(prefix: string = "INV") {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -36,7 +37,39 @@ export async function POST(req: NextRequest) {
         const landlordId = session?.id;
         const { buildingId, unitId } = validation.data;
 
-        // Verify the landlord owns this building
+        const landlord = await prisma.user.findUnique({
+            where: { id: landlordId }
+        });
+
+        if (!landlord || !landlord.walletAddress) {
+            return NextResponse.json({
+                success: false,
+                message: "Landlord wallet not verified. Please connect and verify your wallet on the dashboard first."
+            }, { status: 403 });
+        }
+
+        try {
+            const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://api.devnet.solana.com";
+            const connection = new Connection(rpcUrl);
+            const usdcMint = getStablecoinMint("USDC", { rpcEndpoint: rpcUrl });
+            const ata = await getAssociatedTokenAddress(usdcMint, new PublicKey(landlord.walletAddress));
+            const info = await connection.getAccountInfo(ata);
+
+            if (!info) {
+                return NextResponse.json({
+                    success: false,
+                    message: "Landlord USDC account not initialized. Please click 'Complete Setup' on your dashboard."
+                }, { status: 403 });
+            }
+        } catch (e) {
+
+
+            return NextResponse.json({
+                success: false,
+                message: "Failed to verify wallet status. Please try again later."
+            }, { status: 500 });
+        }
+
         const building = await prisma.building.findFirst({
             where: {
                 id: buildingId,
@@ -48,7 +81,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Building not found or you do not have permission" }, { status: 403 });
         }
 
-        // Generate a unique code
         const codePrefix = building.name.substring(0, 3).toUpperCase() || "INV";
         const newCode = generateRandomCode(codePrefix);
 
@@ -56,7 +88,7 @@ export async function POST(req: NextRequest) {
             data: {
                 code: newCode,
                 buildingId: building.id,
-                unitId: unitId,
+                unitId: unitId || null,
                 isUsed: false
             }
         });
@@ -68,7 +100,7 @@ export async function POST(req: NextRequest) {
         }, { status: 201 });
 
     } catch (error) {
-        console.error("Error generating invite code:", error);
+
         return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
     }
 }
@@ -89,7 +121,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ success: true, codes }, { status: 200 });
 
     } catch (error) {
-        console.error("Error fetching invite codes:", error);
+
         return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
     }
 }

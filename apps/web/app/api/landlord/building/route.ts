@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { buildingSchema } from "../../zod";
 
 export async function GET(req: NextRequest) {
-    // left with auth logic
+    
     const session = await getSession();
     const landlordId = session?.id;
 
@@ -28,14 +28,13 @@ export async function GET(req: NextRequest) {
             buildings,
         });
     } catch (error) {
-        console.error("Error fetching buildings:", error);
+        
         return NextResponse.json({
             success: false,
             message: "Error fetching buildings",
         }, { status: 500 });
     }
 }
-
 
 export async function POST(req: NextRequest) {
 
@@ -56,7 +55,7 @@ export async function POST(req: NextRequest) {
             building,
         });
     } catch (error) {
-        console.error("Error creating building:", error);
+        
         return NextResponse.json({
             success: false,
             message: "Error creating building",

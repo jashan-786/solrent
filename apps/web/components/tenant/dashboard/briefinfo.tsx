@@ -1,12 +1,31 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
 import { CircleCheckBig, Clock, ShieldCheck, Activity } from "lucide-react";
 
-export default function BriefInfo({ lease }: { lease: any }) {
+import { AutoPayModal } from "./autopaymodal";
+
+export default function BriefInfo({ lease, nextPayment }: { lease: any, nextPayment?: any }) {
+    
+    const getDaysUntilDue = () => {
+        if (!nextPayment?.dueDate) return "--";
+        const now = new Date();
+        const due = new Date(nextPayment.dueDate);
+        const diffMs = due.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) return "Overdue";
+        if (diffDays === 0) return "Today";
+        return `${diffDays} Day${diffDays > 1 ? "s" : ""}`;
+    };
+
+    const getDueDateFormatted = () => {
+        if (!nextPayment?.dueDate) return "No lease";
+        return new Date(nextPayment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
     const data = [
         {
             title: "Next Rent Due",
-            value: lease ? "3 Days" : "--", 
-            description: lease ? "Nov 1st, 2023" : "No lease",
+            value: getDaysUntilDue(),
+            description: getDueDateFormatted(),
             icon: <Clock size={16} className="text-text-400" />
         },
         {
@@ -16,8 +35,8 @@ export default function BriefInfo({ lease }: { lease: any }) {
             icon: <ShieldCheck size={16} className="text-secondary-500" />,
         },
         {
-            title: "Total Paid",
-            value: lease ? `$${(lease.monthlyRent * 2).toLocaleString()}` : "$0", 
+            title: "Monthly Rent",
+            value: lease ? `${lease.monthlyRent?.toLocaleString()} ${lease.stablecoin || "USDC"}` : "$0",
             description: "On-Chain Verified",
             icon: <CircleCheckBig size={16} className="text-secondary-500" />,
         },
@@ -25,7 +44,8 @@ export default function BriefInfo({ lease }: { lease: any }) {
             title: "Auto-Pay",
             value: lease?.autoPayEnabled ? "On" : "Off",
             description: lease?.autoPayEnabled ? "Smart Contract Active" : "Manual Payment",
-            icon: <Activity size={16} className={lease?.autoPayEnabled ? "text-secondary-500" : "text-text-400"} />
+            icon: <Activity size={16} className={lease?.autoPayEnabled ? "text-secondary-500" : "text-text-400"} />,
+            action: lease && lease.landlordWallet ? <div className="mt-4"><AutoPayModal lease={lease} buildingWallet={lease.landlordWallet} /></div> : null
         }
     ];
 
@@ -42,9 +62,10 @@ export default function BriefInfo({ lease }: { lease: any }) {
                             {item.icon}
                             <span className="text-xs text-text-500 font-medium">{item.description}</span>
                         </div>
+                        {item.action}
                     </CardContent>
                 </Card>
             ))}
         </div>
     );
-}   
+}

@@ -24,7 +24,6 @@ export async function POST(req: NextRequest) {
 
         const { walletAddress, signature, message, name, email } = validation.data;
 
-        // 1. Verify Signature (SIWS)
         const signatureUint8 = new Uint8Array(signature);
         const messageUint8 = new TextEncoder().encode(message);
         const pubKeyUint8 = bs58.decode(walletAddress);
@@ -34,7 +33,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Invalid signature" }, { status: 401 });
         }
 
-        // 2. Check if user already exists
         const existingUser = await prisma.user.findFirst({
             where: { OR: [{ email }, { walletAddress }] }
         });
@@ -42,7 +40,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "User with this email or wallet already exists" }, { status: 400 });
         }
 
-        // 3. Create Landlord User
         const newUser = await prisma.user.create({
             data: {
                 name,
@@ -52,7 +49,6 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        // 4. Generate a session cookie (JWT)
         const token = await signJWT({
             id: newUser.id,
             walletAddress: newUser.walletAddress!,
@@ -81,7 +77,7 @@ export async function POST(req: NextRequest) {
         return response;
 
     } catch (error: any) {
-        console.error("Error registering landlord:", error);
+        
         return NextResponse.json({ success: false, message: error.message || "Server error" }, { status: 500 });
     }
 }

@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({ success: true, notifications }, { status: 200 });
     } catch (error) {
-        console.error("Error fetching notifications:", error);
+        
         return NextResponse.json({ success: false, message: "Error fetching notifications" }, { status: 500 });
     }
 }
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ success: true, notification }, { status: 201 });
     } catch (error) {
-        console.error("Error creating notification:", error);
+        
         return NextResponse.json({ success: false, message: "Error creating notification" }, { status: 500 });
     }
 }

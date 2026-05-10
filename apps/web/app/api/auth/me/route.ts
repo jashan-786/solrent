@@ -31,7 +31,7 @@ export async function GET() {
         return NextResponse.json({ success: true, user }, { status: 200 });
 
     } catch (error) {
-        console.error("Error fetching user session:", error);
+        
         return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
     }
 }

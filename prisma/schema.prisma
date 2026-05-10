@@ -25,6 +25,7 @@ model User {
   receivedMessages   Message[]      @relation("ReceivedMessages")
   sentMessages       Message[]      @relation("SentMessages")
   notifications      Notification[]
+  maintenanceReqs    MaintenanceRequest[] @relation("TenantMaintenance")
 }
 
 model Building {
@@ -40,6 +41,9 @@ model Building {
   landlord    User         @relation("LandlordBuildings", fields: [landlordId], references: [id])
   inviteCodes InviteCode[]
   units       Unit[]
+  leases      Lease[]
+  payments    Payment[]
+  maintenance MaintenanceRequest[]
 }
 
 model Unit {
@@ -56,12 +60,14 @@ model Unit {
   inviteCodes InviteCode[]
   leases      Lease[]
   building    Building     @relation(fields: [buildingId], references: [id])
+  maintenance MaintenanceRequest[]
 }
 
 model Lease {
   id                String      @id @default(cuid())
   tenantId          String
   unitId            String
+  buildingId        String
   monthlyRent       Float
   depositAmount     Float?
   stablecoin        String      @default("USDC")
@@ -72,16 +78,22 @@ model Lease {
   recurringApproved Boolean     @default(false)
   leaseDocumentUrl  String?
   leaseNftMint      String?
+  onChainId         BigInt?
+  onChainAddress    String?
+  transactionHash   String?
+  nextDueTimestamp  BigInt?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   tenant            User        @relation("TenantLeases", fields: [tenantId], references: [id])
   unit              Unit        @relation(fields: [unitId], references: [id])
   payments          Payment[]
+  building          Building    @relation(fields: [buildingId], references: [id])
 }
 
 model Payment {
   id                String        @id @default(cuid())
   leaseId           String
+  buildingId        String
   amount            Float
   stablecoin        String
   dueDate           DateTime
@@ -94,6 +106,7 @@ model Payment {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   lease             Lease         @relation(fields: [leaseId], references: [id])
+  building          Building      @relation(fields: [buildingId], references: [id])
 }
 
 model Notification {
@@ -130,6 +143,22 @@ model InviteCode {
   usedBy     User?    @relation("UserUsedInvite", fields: [usedById], references: [id])
 }
 
+model MaintenanceRequest {
+  id          String   @id @default(cuid())
+  tenantId    String
+  unitId      String
+  buildingId  String
+  title       String
+  description String
+  priority    String   @default("LOW")
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      User     @relation("TenantMaintenance", fields: [tenantId], references: [id])
+  unit        Unit     @relation(fields: [unitId], references: [id])
+  building    Building @relation(fields: [buildingId], references: [id])
+}
+
 enum UserRole {
   LANDLORD
   TENANT
@@ -138,6 +167,7 @@ enum UserRole {
 enum LeaseStatus {
   ACTIVE
   PENDING
+  TERMINATION_REQUESTED
   EXPIRED
   TERMINATED
 }

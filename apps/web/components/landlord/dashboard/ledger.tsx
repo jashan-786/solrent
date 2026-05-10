@@ -1,71 +1,74 @@
 "use client";
 
-import useSWR from "swr";
-import axios from "axios";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/ui/components/ui/table";
 import { Avatar, AvatarFallback } from "@repo/ui/components/ui/avatar";
 import { Card, CardHeader } from "@repo/ui/components/ui/card";
+import { ExternalLink } from "lucide-react";
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data);
-
-export const TransactionLedger = () => {
-    const { data, isLoading } = useSWR("/api/landlord/dashboard", fetcher);
-
-    const payments = data?.recentPayments || [];
-
+export const TransactionLedger = ({ payments }: { payments: any[] }) => {
     return (
-        <Card className="bg-card border-none shadow-sm overflow-hidden">
-            <CardHeader>
-                <h5 className="text-auth-navy">Recent Transactions</h5>
+        <Card className="bg-white border border-background-100 shadow-sm rounded-[32px] overflow-hidden">
+            <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
+                <h3 className="text-primary-900 text-xl font-bold">Recent Transactions</h3>
+                <a href="/landlord/payments" className="text-[10px] font-black text-sol-indigo hover:underline uppercase tracking-widest">
+                    View Full Ledger
+                </a>
             </CardHeader>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto p-2">
                 <Table>
-                    <TableHeader className="bg-surface-secondary/50">
-                        <TableRow className="hover:bg-transparent">
-                            <TableHead className="text-tiny font-bold uppercase tracking-wider">Tenant</TableHead>
-                            <TableHead className="text-tiny font-bold uppercase tracking-wider">Property</TableHead>
-                            <TableHead className="text-tiny font-bold uppercase tracking-wider">Amount</TableHead>
-                            <TableHead className="text-tiny font-bold uppercase tracking-wider">Status</TableHead>
+                    <TableHeader className="bg-background-50/50">
+                        <TableRow className="hover:bg-transparent border-none">
+                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-text-400 p-6">Tenant</TableHead>
+                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-text-400 p-6">Property</TableHead>
+                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-text-400 p-6">Amount</TableHead>
+                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-text-400 p-6 text-right">Status</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {isLoading ? (
+                        {payments.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-10">
-                                    <div className="animate-pulse text-text-400 font-bold uppercase tracking-widest text-[10px]">
-                                        Loading ledger...
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ) : payments.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center py-10 text-text-400 text-sm">
+                                <TableCell colSpan={4} className="text-center py-10 text-text-400 text-sm italic">
                                     No transactions recorded yet.
                                 </TableCell>
                             </TableRow>
                         ) : payments.map((tx: any) => (
-                            <TableRow key={tx.id} className="border-muted/20">
-                                <TableCell className="flex items-center gap-3 py-4">
-                                    <Avatar className="h-8 w-8 border-background-grey">
-                                        <AvatarFallback className="text-tiny font-bold bg-surface-secondary text-primary-900">
+                            <TableRow key={tx.id} className="border-background-50 hover:bg-background-50/30 transition-colors">
+                                <TableCell className="flex items-center gap-4 p-6">
+                                    <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                                        <AvatarFallback className="text-xs font-black bg-secondary-50 text-secondary-600">
                                             {tx.lease?.tenant?.name?.slice(0, 2).toUpperCase() || "T"}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <span className="text-sm font-bold text-auth-navy">{tx.lease?.tenant?.name}</span>
+                                    <div>
+                                        <p className="text-sm font-black text-primary-900 leading-none">{tx.lease?.tenant?.name}</p>
+                                        <p className="text-[10px] text-text-400 mt-1">Verified Tenant</p>
+                                    </div>
                                 </TableCell>
-                                <TableCell className="text-sm text-text-grey">
-                                    {tx.lease?.unit?.building?.name} ({tx.lease?.unit?.unitNumber})
+                                <TableCell className="text-sm font-bold text-text-600 p-6">
+                                    {tx.lease?.unit?.building?.name} <span className="text-text-400 ml-1">#{tx.lease?.unit?.unitNumber}</span>
                                 </TableCell>
-                                <TableCell className="text-sm font-bold text-auth-navy">
-                                    {tx.amount.toLocaleString()} {tx.stablecoin}
+                                <TableCell className="text-sm font-black text-primary-900 p-6">
+                                    {tx.amount?.toLocaleString() || "0"} <span className="text-[10px] text-text-400 font-black">{tx.stablecoin}</span>
                                 </TableCell>
-                                <TableCell>
-                                    <div className={`inline-flex text-[9px] font-bold px-2 py-1 rounded uppercase tracking-tighter ${
-                                        tx.status === 'COMPLETED' ? 'text-secondary-500 bg-secondary-500/10' :
-                                        tx.status === 'FAILED' ? 'text-destructive bg-destructive/10' :
-                                        'text-text-400 bg-background-100'
-                                    }`}>
-                                        {tx.status}
+                                <TableCell className="p-6 text-right">
+                                    <div className="flex flex-col items-end gap-2">
+                                        <div className={`inline-flex text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest ${
+                                            tx.status === 'COMPLETED' ? 'text-secondary-600 bg-secondary-500/10' :
+                                            tx.status === 'FAILED' ? 'text-destructive bg-destructive/10' :
+                                            'text-text-400 bg-background-100'
+                                        }`}>
+                                            {tx.status}
+                                        </div>
+                                        {tx.transactionHash && (
+                                            <a 
+                                                href={`https://solscan.io/tx/${tx.transactionHash}?cluster=devnet`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[9px] text-sol-indigo hover:underline flex items-center gap-1 font-bold"
+                                            >
+                                                EXPLORER <ExternalLink size={10} />
+                                            </a>
+                                        )}
                                     </div>
                                 </TableCell>
                             </TableRow>

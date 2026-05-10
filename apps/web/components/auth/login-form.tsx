@@ -29,15 +29,12 @@ export const LoginForm = () => {
             setIsLoading(true);
             setError(null);
 
-            // 1. Prepare message
             const messageText = `Sign this message to authenticate with Solrent.\n\nWallet: ${publicKey.toBase58()}\nTimestamp: ${Date.now()}`;
             const messageEncoded = new TextEncoder().encode(messageText);
 
-            // 2. Sign message
             const signature = await signMessage(messageEncoded);
             const signatureArray = Array.from(signature);
 
-            // 3. Send to backend
             const res = await axios.post("/api/auth/login", {
                 walletAddress: publicKey.toBase58(),
                 signature: signatureArray,
@@ -46,11 +43,11 @@ export const LoginForm = () => {
 
             if (res.data.success) {
                 setUser(res.data.user);
-                // Redirect based on role
+                
                 window.location.href = res.data.user.role === "LANDLORD" ? "/landlord/dashboard" : "/tenant/dashboard";
             }
         } catch (err: any) {
-            console.error("Login failed:", err);
+            
             setError(err.response?.data?.error || err.response?.data?.message || "Authentication failed. Make sure you have an account.");
         } finally {
             setIsLoading(false);
@@ -91,7 +88,7 @@ export const LoginForm = () => {
                         )}
                     </Button>
 
-                    {connected && (
+                    {connected && publicKey && (
                         <button 
                             onClick={() => disconnect()} 
                             className="text-xs text-text-400 hover:text-text-600 underline"

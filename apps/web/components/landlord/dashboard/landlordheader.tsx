@@ -5,7 +5,7 @@ export default function LandlordHeader() {
                 <h1 className="text-5xl font-bold text-brand-navy tracking-tight mb-2">
                     Portfolio Hub
                 </h1>
-                {/* The accent underline matches your Ledger UI */}
+                
                 <div className="absolute bottom-1 left-0 w-full h-[3px] bg-solrent-emerald rounded-full" />
             </div>
 

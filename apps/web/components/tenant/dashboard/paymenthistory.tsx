@@ -1,7 +1,10 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui/components/ui/button";
 import { FileText, XCircle } from "lucide-react";
 
-const ListItem = ({ title, sub, val, status, icon: Icon }: any) => (
+const ListItem = ({ title, sub, val, status }: any) => (
     <div className="flex items-center justify-between p-3 bg-white rounded-xl mb-2 border border-transparent hover:border-background-100 transition-all shadow-sm">
         <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${status === 'COMPLETED' ? 'bg-secondary-50 text-secondary-500' : 'bg-destructive/10 text-destructive'}`}>
@@ -19,11 +22,19 @@ const ListItem = ({ title, sub, val, status, icon: Icon }: any) => (
 );
 
 export default function PaymentHistory({ payments }: { payments: any[] }) {
+    const router = useRouter();
+
     return (
         <div className="flex flex-col gap-2 w-full ">
             <div className="flex flex-row justify-between items-center w-full mb-2">
                 <h2 className="text-lg font-bold text-primary-900">Payment History</h2>
-                <Button variant={"link"} className="text-secondary-500">View All</Button>
+                <Button
+                    variant={"link"}
+                    className="text-secondary-500"
+                    onClick={() => router.push("/tenant/payments")}
+                >
+                    View All
+                </Button>
             </div>
             {!payments || payments.length === 0 ? (
                 <div className="p-8 text-center text-text-400 text-sm bg-white rounded-2xl shadow-sm italic">

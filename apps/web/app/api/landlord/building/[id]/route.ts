@@ -2,8 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buildingSchema } from "@/app/api/zod";
-
-
+import { LeaseStatus } from "@prisma/client";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 
@@ -24,8 +23,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 _count: { select: { units: true } },
                 units: {
                     select: {
+                        id: true,
+                        unitNumber: true,
                         occupied: true,
                         rentAmount: true,
+                        bedrooms: true,
+                        bathrooms: true,
+                        leases: {
+                            where: { status: LeaseStatus.ACTIVE },
+                            include: {
+                                tenant: {
+                                    select: { name: true, email: true, avatarUrl: true, walletAddress: true }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -40,13 +51,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         const totalUnits = building._count.units;
         const occupiedUnits = building.units.filter(u => u.occupied).length;
-        const monthlyYield = building.units.reduce((sum, u) => sum + u.rentAmount, 0);
+        const projectedYield = building.units.reduce((sum, u) => sum + u.rentAmount, 0);
+        const actualYield = building.units.reduce((sum, u) => sum + (u.occupied ? u.rentAmount : 0), 0);
 
         const mappedBuilding = {
             ...building,
             units: totalUnits,
             occupied: occupiedUnits,
-            monthlyyield: monthlyYield,
+            monthlyyield: projectedYield,
+            actualYield: actualYield,
+            units_list: building.units.map(unit => ({
+                ...unit,
+                leases: unit.leases.map(lease => ({
+                    ...lease,
+                    onChainId: lease.onChainId?.toString() || null,
+                    nextDueTimestamp: (lease as any).nextDueTimestamp?.toString() || null,
+                }))
+            })),
             img: "/building-landing.png"
         };
 
@@ -55,16 +76,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             building: mappedBuilding
         }, { status: 200 });
 
-    } catch (error) {
-        console.log("Error fetching the building")
-        NextResponse.json(
+    } catch (error: any) {
+        
+        return NextResponse.json(
             {
                 success: false,
-                message: "Error fetching the building"
+                message: error?.message || "Error fetching the building",
+                stack: error?.stack
             },
             { status: 500 }
         )
-
     }
 }
 
@@ -91,11 +112,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             building,
         });
 
-
-
-
     } catch (error) {
-        console.error("Error updating building:", error);
+        
         return NextResponse.json({
             success: false,
             message: "Error updating building",
@@ -103,8 +121,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
 }
-
-
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 
@@ -136,16 +152,13 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             }, { status: 200 })
 
     } catch (error) {
-        console.log("Error deleting the building")
-        NextResponse.json(
+        
+        return NextResponse.json(
             {
                 success: false,
                 message: "Error deleting the building"
             },
             { status: 500 }
-
-
         )
-
     }
 }  

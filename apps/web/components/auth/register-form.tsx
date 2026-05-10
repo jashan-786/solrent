@@ -51,15 +51,12 @@ export const RegisterForm = () => {
             setIsLoading(true);
             setError(null);
 
-            // 1. Prepare message (including timestamp to prevent replay)
-            const messageText = `Sign this message to register with Solrent.\n\nRole: ${role}\nWallet: ${publicKey.toBase58()}\nTimestamp: ${Date.now()}`;
+            const messageText = `Sign this message to register with Solrent.\n\nRole: ${role}\nWallet: ${publicKey.toBase58()}\nTimestamp: ${Date.now()}${role === "TENANT" ? `\nInvite Code: ${formData.code}` : ""}`;
             const messageEncoded = new TextEncoder().encode(messageText);
 
-            // 2. Sign message
             const signature = await signMessage(messageEncoded);
             const signatureArray = Array.from(signature);
 
-            // 3. Send to backend
             const endpoint = role === "LANDLORD" ? "/api/auth/register-landlord" : "/api/auth/register";
             const res = await axios.post(endpoint, {
                 ...formData,
@@ -73,7 +70,7 @@ export const RegisterForm = () => {
                 window.location.href = role === "LANDLORD" ? "/landlord/dashboard" : "/tenant/dashboard";
             }
         } catch (err: any) {
-            console.error("Registration failed:", err);
+            
             setError(err.response?.data?.message || "Registration failed. Check your invite code.");
         } finally {
             setIsLoading(false);

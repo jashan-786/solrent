@@ -35,13 +35,13 @@ export function Header() {
 
                     <ul className="flex flex-col gap-6 m-0 mt-4 list-none p-0">
                         <li className="font-semibold text-lg text-text-700">
-                            <a href="/" onClick={() => setIsMenuOpen(false)} className="block hover:text-accent-500 transition-colors">FEATURES</a>
+                            <a href="/#features" onClick={() => setIsMenuOpen(false)} className="block hover:text-accent-500 transition-colors">FEATURES</a>
                         </li>
                         <li className="font-semibold text-lg text-text-700">
-                            <a href="/about" onClick={() => setIsMenuOpen(false)} className="block hover:text-accent-500 transition-colors">HOW IT WORKS</a>
+                            <a href="/#how-it-works" onClick={() => setIsMenuOpen(false)} className="block hover:text-accent-500 transition-colors">HOW IT WORKS</a>
                         </li>
                         <li className="font-semibold text-lg text-text-700">
-                            <a href="/contact" onClick={() => setIsMenuOpen(false)} className="block hover:text-accent-500 transition-colors">FAQ</a>
+                            <a href="/register" onClick={() => setIsMenuOpen(false)} className="block hover:text-accent-500 transition-colors">CONNECT</a>
                         </li>
                     </ul>
                 </div>
@@ -74,16 +74,18 @@ export function Header() {
                         </div>
 
                         <ul className="hidden md:flex flex-1 gap-10 flex-row justify-center items-center m-0 list-none p-0 text-text-600">
-                            <li className="hover:text-accent-600 font-bold text-sm tracking-wide transition-colors"><a href="/">FEATURES</a></li>
-                            <li className="hover:text-accent-600 font-bold text-sm tracking-wide transition-colors"><a href="/about">HOW IT WORKS</a></li>
-                            <li className="hover:text-accent-600 font-bold text-sm tracking-wide transition-colors"><a href="/contact">FAQ</a></li>
+                            <li className="hover:text-accent-600 font-bold text-sm tracking-wide transition-colors"><a href="/#features">FEATURES</a></li>
+                            <li className="hover:text-accent-600 font-bold text-sm tracking-wide transition-colors"><a href="/#how-it-works">HOW IT WORKS</a></li>
+                            <li className="hover:text-accent-600 font-bold text-sm tracking-wide transition-colors"><a href="/#faq">FAQ</a></li>
                         </ul>
 
                         <div className="flex flex-row items-center">
-                            <Button className="font-bold bg-primary-900 text-white hover:bg-primary-800 transition-all rounded-xl px-6 h-10 flex items-center shadow-md hover:shadow-lg">
-                                <Wallet size={18} className="md:hidden" />
-                                <span className="hidden md:inline">Connect Wallet</span>
-                            </Button>
+                            <a href="/register">
+                                <Button className="font-bold bg-primary-900 text-white hover:bg-primary-800 transition-all rounded-xl px-6 h-10 flex items-center shadow-md hover:shadow-lg">
+                                    <Wallet size={18} className="md:hidden" />
+                                    <span className="hidden md:inline">Connect Wallet</span>
+                                </Button>
+                            </a>
                         </div>
                     </nav>
                 </div>

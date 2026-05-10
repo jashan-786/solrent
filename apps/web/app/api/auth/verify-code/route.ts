@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         }, { status: 200 });
 
     } catch (error) {
-        console.error("Error verifying code:", error);
+        
         return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
     }
 }

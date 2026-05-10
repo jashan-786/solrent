@@ -25,12 +25,20 @@ export async function GET(req: NextRequest) {
             }
         });
 
+        const serializedUnits = units.map(unit => ({
+            ...unit,
+            leases: unit.leases.map(lease => ({
+                ...lease,
+                onChainId: lease.onChainId?.toString() || null,
+            }))
+        }));
+
         return NextResponse.json({
             success: true,
-            units,
+            units: serializedUnits,
         });
     } catch (error) {
-        console.error("Error fetching units:", error);
+        
         return NextResponse.json({
             success: false,
             message: "Error fetching units",
@@ -60,7 +68,7 @@ export async function POST(req: NextRequest) {
             unit,
         });
     } catch (error) {
-        console.error("Error creating unit:", error);
+        
         return NextResponse.json({
             success: false,
             message: "Error creating unit",

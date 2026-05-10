@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-const UserRoleEnum = z.enum(["ADMIN", "LANDLORD", "TENANT"]);
-const LeaseStatusEnum = z.enum(["ACTIVE", "PENDING", "EXPIRED", "TERMINATED"]);
+const UserRoleEnum = z.enum(["LANDLORD", "TENANT"]);
+const LeaseStatusEnum = z.enum(["ACTIVE", "PENDING", "TERMINATION_REQUESTED", "EXPIRED", "TERMINATED"]);
 const PaymentStatusEnum = z.enum(["UPCOMING", "COMPLETED", "FAILED", "OVERDUE"]);
 
 export const userSchema = z.object({
@@ -53,13 +53,14 @@ export const leaseSchema = z.object({
     status: LeaseStatusEnum.default("PENDING"),
     autoPayEnabled: z.boolean().default(false),
     recurringApproved: z.boolean().default(false),
-    leaseDocumentUrl: z.string().url().nullable().optional(),
+    leaseDocumentUrl: z.string().min(1).nullable().optional(),
     leaseNftMint: z.string().nullable().optional(),
 });
 
 export const paymentSchema = z.object({
     id: z.string().cuid().optional(),
     leaseId: z.string().cuid("Lease ID is required"),
+    buildingId: z.string().cuid("Building ID is required"),
     amount: z.number().positive("Amount must be positive"),
     stablecoin: z.string().default("USDC"),
     dueDate: z.string().or(z.date()),

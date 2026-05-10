@@ -8,8 +8,9 @@ interface PropertyHeaderProps {
         label: string;
         val: string;
     }[];
+    onOpenMaintenance?: () => void;
 }
-export default function PropertyHeader({ title, address, image, stats }: PropertyHeaderProps) {
+export default function PropertyHeader({ title, address, image, stats, onOpenMaintenance }: PropertyHeaderProps) {
     return (
         <div className="bg-white rounded-twelve p-8 flex flex-col md:flex-row gap-6 shadow-sm border border-gray-100 rounded-[12px] h-full">
             <div className="w-full md:w-1/3 h-48 rounded-lg overflow-hidden relative">
@@ -39,7 +40,10 @@ export default function PropertyHeader({ title, address, image, stats }: Propert
                     ))}
                 </div>
 
-                <button className="mt-6 text-secondary-500 font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+                <button 
+                    onClick={onOpenMaintenance}
+                    className="mt-6 text-secondary-500 font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all"
+                >
                     Request Maintenance <ArrowRight size={16} />
                 </button>
             </div>

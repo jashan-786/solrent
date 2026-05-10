@@ -22,9 +22,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             return NextResponse.json({ success: false, message: "Unit not found" }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true, unit }, { status: 200 });
+        const serializedUnit = {
+            ...unit,
+            leases: unit.leases.map(lease => ({
+                ...lease,
+                onChainId: lease.onChainId?.toString() || null,
+            }))
+        };
+
+        return NextResponse.json({ success: true, unit: serializedUnit }, { status: 200 });
     } catch (error) {
-        console.error("Error fetching unit:", error);
+        
         return NextResponse.json({ success: false, message: "Error fetching unit" }, { status: 500 });
     }
 }
@@ -50,7 +58,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
         return NextResponse.json({ success: true, unit });
     } catch (error) {
-        console.error("Error updating unit:", error);
+        
         return NextResponse.json({ success: false, message: "Error updating unit" }, { status: 500 });
     }
 }
@@ -68,7 +76,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
         return NextResponse.json({ success: true, message: "Unit deleted successfully" }, { status: 200 });
     } catch (error) {
-        console.error("Error deleting unit:", error);
+        
         return NextResponse.json({ success: false, message: "Error deleting unit" }, { status: 500 });
     }
 }

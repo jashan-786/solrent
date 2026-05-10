@@ -4,10 +4,12 @@ import useSWR from "swr";
 import axios from "axios";
 import { Card, CardContent } from "@repo/ui/components/ui/card"
 import Image from "next/image";
-import { MoreVertical, Plus } from "lucide-react";
+import { MoreVertical, Plus, Search } from "lucide-react";
 import { Button } from "@repo/ui/components/ui/button";
 import CTAEmptyStateCompnent from "./addbuilding";
 import ViewDetailsButton from "./viewdetails";
+import { SortOption } from "@/app/landlord/buildings/page";
+import { AddUnitModal } from "@/components/modals/addunitmodal";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -16,7 +18,7 @@ const BuildingCard = ({ building }: { building: any }) => {
         <Card className=" border-none shadow-sm bg-surface-primary max-w-2xl p-0 gap-0 rounded-xl">
             <CardContent className="p-0 m-0 rounded-xl h-full" >
                 <div className=" h-full grid grid-cols-1 md:grid-cols-12 gap-2 rounded-xl ">
-                    {/* Image Section */}
+
                     <div className=" h-48 md:h-full md:col-span-4 lg:col-span-4 rounded-l-xl bg-background-200">
                         <Image
                             src={building.img || "/building-landing.png"}
@@ -27,7 +29,6 @@ const BuildingCard = ({ building }: { building: any }) => {
                         />
                     </div>
 
-                    {/* Content Section */}
                     <div className=" md:col-span-8 lg:col-span-8 md:h-full flex flex-col justify-between p-4">
                         <div className="flex justify-between items-start">
                             <div>
@@ -47,26 +48,28 @@ const BuildingCard = ({ building }: { building: any }) => {
                             <div>
                                 <p className="text-text-500 uppercase tracking-wider text-[10px] font-bold">Monthly Yield</p>
                                 <p className="text-sm font-bold text-secondary-500 mt-1">
-                                    ${building.monthlyyield?.toLocaleString() || "0"}
+                                    {building.monthlyyield?.toLocaleString() || "0"} <span className="text-[10px] ml-0.5">USDC</span>
                                 </p>
                             </div>
                             <div>
                                 <p className="text-text-500 uppercase tracking-wider text-[10px] font-bold">Occupancy</p>
                                 <small className=" font-bold text-primary-900 mt-1">
-                                    {building.occupied} / {building.units} Units
+                                    {building.occupiedUnits || 0} / {building.totalUnits || 0} Units
                                 </small>
                             </div>
                         </div>
 
                         <div className="flex gap-2 mt-6">
                             <ViewDetailsButton building={building} />
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="w-10 h-10 rounded-lg border-background-200 text-primary-900"
-                            >
-                                <Plus className="h-5 w-5" />
-                            </Button>
+                            <AddUnitModal buildingId={building.id}>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="w-10 h-10 rounded-lg border-background-200 text-primary-900"
+                                >
+                                    <Plus className="h-5 w-5" />
+                                </Button>
+                            </AddUnitModal>
                         </div>
                     </div>
                 </div>
@@ -75,19 +78,123 @@ const BuildingCard = ({ building }: { building: any }) => {
     );
 };
 
-export default function Buildings() {
+import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+export default function Buildings({ 
+    searchQuery = "", 
+    cityFilter = null, 
+    occupancyFilter = null, 
+    sortBy = "name" 
+}: { 
+    searchQuery?: string,
+    cityFilter?: string | null,
+    occupancyFilter?: "occupied" | "vacant" | null,
+    sortBy?: SortOption
+}) {
     const { data, isLoading } = useSWR("/api/landlord/buildings", fetcher);
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const itemsPerPage = 6;
+
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, cityFilter, occupancyFilter, sortBy]);
 
     if (isLoading) return <BuildingsSkeleton />;
 
     const buildings = data?.buildings || [];
 
+    let filteredBuildings = buildings.filter((building: any) => {
+        const matchesSearch = 
+            building.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            building.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            building.city.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        const matchesCity = !cityFilter || building.city === cityFilter;
+        
+        const occupancyRate = building.totalUnits > 0 ? (building.occupiedUnits / building.totalUnits) : 0;
+        const matchesOccupancy = !occupancyFilter || 
+            (occupancyFilter === "occupied" ? occupancyRate > 0.5 : occupancyRate <= 0.5);
+
+        return matchesSearch && matchesCity && matchesOccupancy;
+    });
+
+    filteredBuildings = [...filteredBuildings].sort((a, b) => {
+        if (sortBy === "name") return a.name.localeCompare(b.name);
+        if (sortBy === "yield") return (b.monthlyyield || 0) - (a.monthlyyield || 0);
+        if (sortBy === "occupancy") {
+            const rateA = a.totalUnits > 0 ? a.occupiedUnits / a.totalUnits : 0;
+            const rateB = b.totalUnits > 0 ? b.occupiedUnits / b.totalUnits : 0;
+            return rateB - rateA;
+        }
+        return 0;
+    });
+
+    const totalPages = Math.ceil(filteredBuildings.length / itemsPerPage);
+    const paginatedBuildings = filteredBuildings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    if (filteredBuildings.length === 0 && searchQuery) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-background-200 mt-3">
+                <Search className="h-12 w-12 text-text-300 mb-4" />
+                <h3 className="text-xl font-bold text-primary-900">No properties found</h3>
+                <p className="text-text-500">Try adjusting your search for "{searchQuery}"</p>
+                <Button variant="link" onClick={() => window.location.reload()} className="mt-2 text-sol-indigo">
+                    Clear all filters
+                </Button>
+            </div>
+        );
+    }
+
     return (
-        <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3 ">
-            {buildings.map((building: any) => (
-                <BuildingCard key={building.id} building={building} />
-            ))}
-            <CTAEmptyStateCompnent />
+        <div className="space-y-8">
+            <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3 ">
+                {paginatedBuildings.map((building: any) => (
+                    <BuildingCard key={building.id} building={building} />
+                ))}
+                {currentPage === totalPages || totalPages === 0 ? <CTAEmptyStateCompnent /> : null}
+            </div>
+
+            {}
+            {totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 pt-6 pb-20">
+                    <p className="text-sm text-text-400 font-bold">
+                        Showing <span className="text-primary-900 font-black">{paginatedBuildings.length}</span> of <span className="text-primary-900 font-black">{filteredBuildings.length}</span> properties
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-10 px-4 rounded-xl border-background-100 font-bold hover:bg-background-50 disabled:opacity-50"
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft className="h-4 w-4 mr-1" /> Prev
+                        </Button>
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <Button 
+                                    key={page}
+                                    size="sm" 
+                                    className={`h-10 w-10 rounded-xl font-black transition-all ${currentPage === page ? 'bg-primary-900 text-white shadow-md scale-110' : 'bg-background-50 text-primary-900 hover:bg-background-100'}`}
+                                    onClick={() => setCurrentPage(page)}
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                        </div>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-10 px-4 rounded-xl border-background-100 font-bold hover:bg-background-50 disabled:opacity-50"
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
