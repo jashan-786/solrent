@@ -1,10 +1,33 @@
+"use client";
+
 import { Badge } from "@repo/ui/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/ui/components/ui/table";
-import { CheckCircle2, AlertCircle, Clock, ExternalLink, MoreHorizontal } from "lucide-react";
+import { CheckCircle2, AlertCircle, Clock, ExternalLink, MoreHorizontal, Loader2 } from "lucide-react";
 import { Button } from "@repo/ui/components/ui/button";
 
-export function PaymentTable() {
-    // Use the transactions data array here
+const getStatusBadge = (status: string) => {
+    switch (status) {
+        case "COMPLETED":
+            return { className: "bg-sol-emerald/10 text-sol-emerald", icon: <CheckCircle2 className="h-3 w-3 mr-1.5" />, label: "CONFIRMED" };
+        case "UPCOMING":
+            return { className: "bg-amber-100 text-amber-600", icon: <Clock className="h-3 w-3 mr-1.5" />, label: "PENDING" };
+        case "FAILED":
+            return { className: "bg-red-100 text-red-600", icon: <AlertCircle className="h-3 w-3 mr-1.5" />, label: "FAILED" };
+        case "OVERDUE":
+            return { className: "bg-orange-100 text-orange-600", icon: <AlertCircle className="h-3 w-3 mr-1.5" />, label: "OVERDUE" };
+        default:
+            return { className: "bg-slate-100 text-slate-600", icon: <Clock className="h-3 w-3 mr-1.5" />, label: status };
+    }
+};
+
+export function PaymentTable({ data, isLoading }: { data: any[], isLoading: boolean }) {
+
+    if (isLoading) return (
+        <div className="flex items-center justify-center min-h-[30vh]">
+            <Loader2 className="h-8 w-8 animate-spin text-secondary-500" />
+        </div>
+    );
+
     return (
         <div className="rounded-3xl border border-slate-100 bg-white shadow-sm overflow-hidden">
             <Table>
@@ -19,48 +42,73 @@ export function PaymentTable() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {/* Map through transactions here */}
-                    <PaymentRow />
+                    {(!data || data.length === 0) ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center py-20 text-text-400 italic">
+                                No payments found.
+                            </TableCell>
+                        </TableRow>
+                    ) : data.map((payment: any) => (
+                        <PaymentRow key={payment.id} payment={payment} />
+                    ))}
                 </TableBody>
             </Table>
         </div>
     );
 }
 
-function PaymentRow() {
+function PaymentRow({ payment }: { payment: any }) {
+    const statusBadge = getStatusBadge(payment.status);
+    const txHash = payment.transactionHash;
+    const shortHash = txHash ? `${txHash.slice(0, 4)}...${txHash.slice(-4)}` : "N/A";
+    const tenantName = payment.lease?.tenant?.name || "Unknown";
+    const buildingName = payment.building?.name || "—";
+
     return (
         <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-50">
             <TableCell className="py-5 px-6">
                 <div className="flex flex-col">
-                    <span className="font-bold text-auth-navy text-sm">TX-9021</span>
-                    <div className="flex items-center gap-1 group cursor-pointer">
-                        <span className="text-[10px] font-mono text-slate-400 group-hover:text-sol-indigo underline decoration-dotted">5fGz...3n9q</span>
-                        <ExternalLink className="h-2.5 w-2.5 text-slate-300 group-hover:text-sol-indigo" />
-                    </div>
+                    <span className="font-bold text-auth-navy text-sm">TX-{payment.id.slice(0, 4)}</span>
+                    <a
+                        href={txHash ? `https://explorer.solana.com/tx/${txHash}?cluster=devnet` : "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 group cursor-pointer"
+                    >
+                        <span className="text-[10px] font-mono text-slate-400 group-hover:text-sol-indigo underline decoration-dotted">{shortHash}</span>
+                        {txHash && <ExternalLink className="h-2.5 w-2.5 text-slate-300 group-hover:text-sol-indigo" />}
+                    </a>
                 </div>
             </TableCell>
             <TableCell>
                 <div className="flex flex-col">
-                    <span className="font-bold text-auth-slate text-sm">Marcus Thorne</span>
-                    <span className="text-[10px] font-bold text-sol-indigo uppercase tracking-tighter">Unit 1402</span>
-                </div>
-            </TableCell>
-            <TableCell>
-                <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-black text-white">U</div>
-                    <div className="flex flex-col">
-                        <span className="font-black text-auth-navy text-sm">2,450.00</span>
-                        <span className="text-[10px] font-bold text-slate-400">USDC</span>
+                    <span className="font-bold text-auth-slate text-sm">{tenantName}</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-sol-indigo uppercase tracking-tighter">{buildingName}</span>
+                        <span className="text-[10px] text-slate-400 font-medium lowercase">• {payment.lease?.tenant?.email}</span>
                     </div>
                 </div>
             </TableCell>
             <TableCell>
-                <Badge className="bg-sol-emerald/10 text-sol-emerald border-none rounded-lg px-3 py-1 text-[10px] font-black">
-                    <CheckCircle2 className="h-3 w-3 mr-1.5" /> CONFIRMED
+                <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-black text-white">
+                        {payment.stablecoin?.charAt(0) || "U"}
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="font-black text-auth-navy text-sm">{payment.amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-[10px] font-bold text-slate-400">{payment.stablecoin || "USDC"}</span>
+                    </div>
+                </div>
+            </TableCell>
+            <TableCell>
+                <Badge className={`${statusBadge.className} border-none rounded-lg px-3 py-1 text-[10px] font-black`}>
+                    {statusBadge.icon} {statusBadge.label}
                 </Badge>
             </TableCell>
             <TableCell>
-                <span className="text-xs font-bold text-auth-slate">Apr 01, 2026</span>
+                <span className="text-xs font-bold text-auth-slate">
+                    {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "N/A"}
+                </span>
             </TableCell>
             <TableCell className="text-right px-6">
                 <Button variant="ghost" size="icon" className="rounded-xl">

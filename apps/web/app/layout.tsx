@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: "Web3 Real Estate platform for the Colosseum Solana Hackathon",
 };
 
+import { SolanaWalletProvider } from "@/components/providers/wallet-provider";
+import { AuthProvider } from "@/components/providers/auth-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,7 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${manrope.variable} antialiased `}>
-        {children}
+        <SolanaWalletProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </SolanaWalletProvider>
       </body>
     </html>
   );

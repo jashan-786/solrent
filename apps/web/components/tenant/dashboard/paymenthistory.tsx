@@ -1,38 +1,56 @@
-import { Button } from "@repo/ui/components/ui/button";
-import { FileText } from "lucide-react";
+"use client";
 
-const ListItem = ({ title, sub, val, isNeg, icon: Icon, dotColor }: any) => (
-    <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-xl mb-2 border border-transparent hover:border-gray-100 transition-all">
+import { useRouter } from "next/navigation";
+import { Button } from "@repo/ui/components/ui/button";
+import { FileText, XCircle } from "lucide-react";
+
+const ListItem = ({ title, sub, val, status }: any) => (
+    <div className="flex items-center justify-between p-3 bg-white rounded-xl mb-2 border border-transparent hover:border-background-100 transition-all shadow-sm">
         <div className="flex items-center gap-3">
-            {Icon ? (
-                <div className="bg-solrent-surface p-2 rounded-lg text-solrent-emerald">
-                    <Icon size={20} />
-                </div>
-            ) : (
-                <div className={`w-2 h-2 rounded-full ${dotColor} ml-2 mr-1`} />
-            )}
+            <div className={`p-2 rounded-lg ${status === 'COMPLETED' ? 'bg-secondary-50 text-secondary-500' : 'bg-destructive/10 text-destructive'}`}>
+                {status === 'COMPLETED' ? <FileText size={20} /> : <XCircle size={20} />}
+            </div>
             <div>
-                <p className="text-sm font-bold text-brand-navy">{title}</p>
-                <p className="text-[10px] text-text-muted font-medium">{sub}</p>
+                <p className="text-sm font-bold text-primary-900">{title}</p>
+                <p className="text-[10px] text-text-500 font-medium">{sub}</p>
             </div>
         </div>
-        {val && (
-            <p className={`font-bold ${isNeg ? "text-solrent-emerald" : "text-brand-navy"}`}>
-                {isNeg ? `-${val}` : val}
-            </p>
-        )}
+        <p className={`font-bold ${status === 'COMPLETED' ? "text-secondary-500" : "text-destructive"}`}>
+            {status === 'COMPLETED' ? `-${val}` : `FAILED`}
+        </p>
     </div>
 );
 
-// usage: 
-export default function PaymentHistory() {
+export default function PaymentHistory({ payments }: { payments: any[] }) {
+    const router = useRouter();
+
     return (
         <div className="flex flex-col gap-2 w-full ">
-            <div className="flex flex-row justify-between items-center w-full">
-                <h2 className="text-lg font-bold text-brand-navy">Payment History</h2>
-                <Button variant={"link"}>View All</Button>
+            <div className="flex flex-row justify-between items-center w-full mb-2">
+                <h2 className="text-lg font-bold text-primary-900">Payment History</h2>
+                <Button
+                    variant={"link"}
+                    className="text-secondary-500"
+                    onClick={() => router.push("/tenant/payments")}
+                >
+                    View All
+                </Button>
             </div>
-            <ListItem title="November Rent" sub="Nov 1, 2023" val="$2,100" isNeg icon={FileText} />
+            {!payments || payments.length === 0 ? (
+                <div className="p-8 text-center text-text-400 text-sm bg-white rounded-2xl shadow-sm italic">
+                    No payment history available.
+                </div>
+            ) : (
+                payments.map((p) => (
+                    <ListItem 
+                        key={p.id}
+                        title={`Rent Payment - ${new Date(p.dueDate).toLocaleString('default', { month: 'long' })}`} 
+                        sub={new Date(p.paidAt || p.dueDate).toLocaleDateString()} 
+                        val={`${p.amount} ${p.stablecoin}`} 
+                        status={p.status}
+                    />
+                ))
+            )}
         </div>
     );
 }

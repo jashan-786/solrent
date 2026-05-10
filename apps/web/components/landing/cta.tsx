@@ -6,19 +6,14 @@ import { Badge } from "@repo/ui/components/ui/badge"
 import { BadgeCheck } from "lucide-react"
 import { Button } from "@repo/ui/components/ui/button";
 
-
-
-
-
 export function CTA() {
     return (
-        <section className="w-full h-full  flex flex-col items-center justify-center gap-16 -4 md:px-8 py-10 ">
+        <section id="how-it-works" className="w-full h-full  flex flex-col items-center justify-center gap-16 -4 md:px-8 py-10 ">
             <div className="flex flex-col md:flex-row gap-10 p-4">
                 <motion.div
                     initial={{ rotate: +2 }}
                     className="w-full p-5 md:w-1/2 bg-background-grey rounded-2xl">
                     <div
-
 
                         className=" w-full h-full bg-surface-primary rounded-2xl">
                         <CTAItem1 />
@@ -34,7 +29,6 @@ export function CTA() {
         </section>
     );
 }
-
 
 function CTAItem1() {
     return (
@@ -61,7 +55,6 @@ function CTAItem1() {
                     <p className="font-extrabold ">Active Leases</p>
                     <div>
 
-
                         <div className="  flex flex-row gap-2 bg-background-grey rounded-2xl  justify-between  items-center p-4">
                             <div className="flex flex-row gap-2 items-center ">
                                 <Building className=" text-sol-emerald text-3xl" />
@@ -87,11 +80,9 @@ function CTAItem1() {
     );
 }
 
-
 function CTAItemLandItem({ title, description }: { title: string, description: string }) {
     return (
         <motion.div className=" flex flex-col gap-2 bg-background-grey rounded-2xl p-4">
-
 
             <p className=" text-text-grey font-extrabold">{title}</p>
             <small className="text-black font-bold">{description}</small>
@@ -100,7 +91,6 @@ function CTAItemLandItem({ title, description }: { title: string, description: s
     );
 }
 
-
 function CTAItem2() {
     return (
         <motion.div className=" flex  flex-col justify-between items-center gap-3">
@@ -108,7 +98,6 @@ function CTAItem2() {
             <div>
                 <h3>Manage your entire portfolio from a single ledger.</h3>
             </div>
-
 
             <div className="flex flex-col gap-4">
                 <div>
@@ -120,7 +109,6 @@ function CTAItem2() {
                         <CTAItem2LandItem description="Real-time USDC liquidation" />
                         <CTAItem2LandItem description="Automated tax reporting exports" />
                     </div>
-
 
                 </div>
             </div>
@@ -147,8 +135,6 @@ function CTAItem2LandItem({ description }: { description: string }) {
     );
 }
 
-
-
 function CTAItem3() {
     return (
         <div className="w-full md:w-full flex flex-col gap-2 p-2  bg-auth-navy rounded-2xl ">
@@ -161,10 +147,11 @@ function CTAItem3() {
                         <div className=" text-surface-tertiary w-1/2">
                             Transitioning to on-chain rent shouldn't be complex. We've distilled the process into three effortless movements.
                         </div>
-                        <Button className=" bg-green-back">
-                            Get Started Now
-                        </Button>
-
+                        <a href="/register">
+                            <Button className="bg-linear-to-r from-secondary-500 to-secondary-600 text-white hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-secondary-500/20 border-none px-8 py-6 rounded-2xl font-black text-lg">
+                                Get Started Now
+                            </Button>
+                        </a>
                     </div>
                     <div className=" flex  flex-row justify-evenly  gap-2 items-center p-16">
                         <CTAItem3LandItem number="01" title="Connect & Verify" description="Onboard your properties and verify ownership through our secure on-chain protocol. Connect your preferred Solana wallet in seconds." />
@@ -172,7 +159,6 @@ function CTAItem3() {
                         <CTAItem3LandItem number="03" title="Automate & Scale" description="Invite tenants to the portal. Once authorized, rent is pulled automatically every month and deposited directly into your wallet." />
                     </div>
                 </div>
-
 
             </motion.div>
         </div>

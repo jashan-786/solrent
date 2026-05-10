@@ -1,61 +1,71 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
-import { CircleCheckBig, CircleSmall } from "lucide-react";
+import { CircleCheckBig, Clock, ShieldCheck, Activity } from "lucide-react";
 
-export default function BriefInfo() {
+import { AutoPayModal } from "./autopaymodal";
+
+export default function BriefInfo({ lease, nextPayment }: { lease: any, nextPayment?: any }) {
+    
+    const getDaysUntilDue = () => {
+        if (!nextPayment?.dueDate) return "--";
+        const now = new Date();
+        const due = new Date(nextPayment.dueDate);
+        const diffMs = due.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) return "Overdue";
+        if (diffDays === 0) return "Today";
+        return `${diffDays} Day${diffDays > 1 ? "s" : ""}`;
+    };
+
+    const getDueDateFormatted = () => {
+        if (!nextPayment?.dueDate) return "No lease";
+        return new Date(nextPayment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const data = [
+        {
+            title: "Next Rent Due",
+            value: getDaysUntilDue(),
+            description: getDueDateFormatted(),
+            icon: <Clock size={16} className="text-text-400" />
+        },
+        {
+            title: "Lease Status",
+            value: lease ? "Active" : "None",
+            description: lease ? `Expires ${new Date(lease.endDate).toLocaleDateString()}` : "Not Rented",
+            icon: <ShieldCheck size={16} className="text-secondary-500" />,
+        },
+        {
+            title: "Monthly Rent",
+            value: lease ? `${lease.monthlyRent?.toLocaleString()} ${lease.stablecoin || "USDC"}` : "$0",
+            description: "On-Chain Verified",
+            icon: <CircleCheckBig size={16} className="text-secondary-500" />,
+        },
+        {
+            title: "Auto-Pay",
+            value: lease?.autoPayEnabled ? "On" : "Off",
+            description: lease?.autoPayEnabled ? "Smart Contract Active" : "Manual Payment",
+            icon: <Activity size={16} className={lease?.autoPayEnabled ? "text-secondary-500" : "text-text-400"} />,
+            action: lease && lease.landlordWallet ? <div className="mt-4"><AutoPayModal lease={lease} buildingWallet={lease.landlordWallet} /></div> : null
+        }
+    ];
+
     return (
-        <div className="flex gap-2 flex-row w-full">
+        <div className="flex gap-4 flex-row w-full overflow-x-auto no-scrollbar pb-2">
             {data.map((item, index) => (
-                <Card key={index} className="w-[300px] bg-white rounded-2xl border-none">
-                    <CardHeader>
-                        <CardTitle className="text-sm md:text-base text-text-600">{item.title}</CardTitle>
-                        <CardDescription className="text-lg md:text-4xl font-extrabold text-text-900">{item.value}</CardDescription>
+                <Card key={index} className="min-w-[240px] flex-1 bg-white rounded-2xl border-none shadow-sm">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-text-500">{item.title}</CardTitle>
+                        <CardDescription className="text-2xl font-extrabold text-primary-900">{item.value}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex flex-row gap-2">
+                        <div className="flex items-center gap-2">
                             {item.icon}
-                            {item.title === "Wallet Balance" ? <div className="text-secondary-500 font-semibold">verified</div> : ""}
-                            <CardDescription>{item.description}</CardDescription>
+                            <span className="text-xs text-text-500 font-medium">{item.description}</span>
                         </div>
+                        {item.action}
                     </CardContent>
                 </Card>
-
             ))}
-
         </div>
     );
 }
-
-interface BriefInfoData {
-    title: string;
-    value: string;
-    description: string;
-    icon: React.ReactNode;
-}
-
-const data: BriefInfoData[] = [
-    {
-        title: "Next Rent Due",
-        value: "4 Days",
-        description: "Remaining until Oct 1",
-        icon: ""
-    },
-    {
-        title: "Lease Status",
-        value: "Active",
-        description: "expires on Dec 31, 2026",
-        icon: "",
-    },
-    {
-        title: "Wallet Balance",
-        value: "$2,500 USDC",
-        description: "",
-        icon: <CircleCheckBig />,
-    },
-    {
-        title: "Auto-Pay",
-        value: "Active",
-        description: "",
-        icon: <CircleSmall size={24} className="text-secondary-500" absoluteStrokeWidth />
-    }
-
-]   

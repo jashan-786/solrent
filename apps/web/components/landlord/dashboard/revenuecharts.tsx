@@ -1,11 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@repo/ui/components/ui/card";
-import { Badge } from "@repo/ui/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@repo/ui/components/ui/card";
 
-export const RevenueChart = () => {
-    const data = [
-        { m: "Jan", h: "40%" }, { m: "Feb", h: "55%" }, { m: "Mar", h: "45%" },
-        { m: "Apr", h: "75%" }, { m: "May", h: "100%", active: true }, { m: "Jun", h: "85%" },
+
+export const RevenueChart = ({ revenueData }: { revenueData?: any[] }) => {
+    const defaultData = [
+        { m: "Jan", h: "40%", amount: 0, active: false }, { m: "Feb", h: "55%", amount: 0, active: false },
+        { m: "Mar", h: "45%", amount: 0, active: false }, { m: "Apr", h: "75%", amount: 0, active: false },
+        { m: "May", h: "100%", amount: 0, active: true }, { m: "Jun", h: "85%", amount: 0, active: false },
     ];
+
+    const data = revenueData && revenueData.length > 0 ? revenueData : defaultData;
 
     return (
         <Card className="bg-card border-none shadow-sm">
@@ -19,26 +22,24 @@ export const RevenueChart = () => {
                 </div>
             </CardHeader>
             <CardContent className="pt-10">
-                {/* This is the 200px tall container */}
                 <div className="flex items-end justify-between h-[200px] gap-2 px-2 relative">
-                    {data.map((bar) => (
-                        <div key={bar.m} className="flex flex-col items-center gap-4 w-full h-full relative group cursor-pointer justify-end">
-                            {bar.active && (
-                                <div className="absolute -top-10 z-10">
-                                    <div className="bg-sol-emerald text-white text-tiny font-bold px-2 py-1 rounded whitespace-nowrap">
-                                        Peak: $82k (SOL)
+                    {data.map((bar: any, index: number) => (
+                        <div key={`${bar.m}-${index}`} className="flex flex-col items-center gap-3 w-full h-full relative group cursor-pointer justify-end pt-10">
+                            {bar.active && bar.amount > 0 && (
+                                <div className="absolute top-0 z-10">
+                                    <div className="bg-sol-emerald text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm whitespace-nowrap">
+                                        {bar.amount} USDC
                                     </div>
                                 </div>
                             )}
 
-                            {/* FIX: Added 'h-full' to the wrapper above and ensure this div 
-                   is positioned correctly. 
-                */}
-                            <div
-                                className={`w-full max-w-[40px] rounded-md transition-all duration-500 ${bar.active ? "bg-sol-emerald" : "bg-surface-secondary hover:bg-sol-emerald"
-                                    }`}
-                                style={{ height: bar.h }} // height: 40% now works because parent is 200px
-                            />
+                            <div className="w-full flex-1 flex flex-col justify-end items-center mt-2">
+                                <div
+                                    className={`w-full max-w-[40px] rounded-md transition-all duration-500 ${bar.active ? "bg-sol-emerald" : "bg-surface-secondary hover:bg-sol-emerald"
+                                        }`}
+                                    style={{ height: bar.h }}
+                                />
+                            </div>
 
                             <span className="text-tiny font-bold text-text-grey uppercase">{bar.m}</span>
                         </div>
