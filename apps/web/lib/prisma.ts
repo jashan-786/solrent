@@ -1,10 +1,22 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 const createPrismaClient = () => {
-    // For Supabase Pooler (Port 6543), we don't need a manual pg adapter in Next.js
-    // We just use the standard PrismaClient with the DATABASE_URL
+    const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
+    if (!connectionString) {
+        throw new Error("Missing DATABASE_URL");
+    }
+    const pool = new Pool({
+        connectionString,
+        ssl: {
+            rejectUnauthorized: false
+        }
+    });
+    const adapter = new PrismaPg(pool);
     return new PrismaClient({
-        log: ["error", "warn"],
+        adapter,
+        log: ["query"],
     });
 };
 
