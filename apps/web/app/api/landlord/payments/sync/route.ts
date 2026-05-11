@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
             const currentDue = lease.nextDueTimestamp ? Number(lease.nextDueTimestamp) : Math.floor(new Date(lease.startDate).getTime() / 1000);
             const nextDue = BigInt(currentDue + 2592000);
 
-            );
+            
 
             await prisma.lease.update({
                 where: { id: leaseId },
