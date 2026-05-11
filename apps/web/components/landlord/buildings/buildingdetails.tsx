@@ -55,7 +55,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
             .filter((l: any) => {
                 const dueTime = l.nextDueTimestamp ? Number(l.nextDueTimestamp) : (l.startDate ? Math.floor(new Date(l.startDate).getTime() / 1000) : null);
                 const isDue = dueTime !== null ? dueTime <= now : false;
-                return l.status === "ACTIVE" && l.tenant?.walletAddress && isDue;
+                return l.status === "ACTIVE" && l.tenant?.walletAddress && isDue && l.autoPayEnabled === true;
             });
 
         if (!activeLeases || activeLeases.length === 0) {
@@ -404,7 +404,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                             .filter((l: any) => {
                                                 const dueTime = l.nextDueTimestamp ? Number(l.nextDueTimestamp) : (l.startDate ? Math.floor(new Date(l.startDate).getTime() / 1000) : null);
                                                 const isDue = dueTime !== null ? dueTime <= now : false;
-                                                return l.status === "ACTIVE" && l.tenant?.walletAddress && isDue;
+                                                return l.status === "ACTIVE" && l.tenant?.walletAddress && isDue && l.autoPayEnabled === true;
                                             })
                                             .reduce((sum: number, l: any) => sum + (l.monthlyRent || 0), 0);
                                         return collectable ? collectable.toLocaleString() : "0";
