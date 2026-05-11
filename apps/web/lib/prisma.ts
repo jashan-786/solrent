@@ -5,6 +5,10 @@ import { Pool } from "pg";
 const createPrismaClient = () => {
     const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
     if (!connectionString) {
+        if (process.env.NODE_ENV === "production") {
+            console.warn("⚠️ DATABASE_URL is missing during build. Database features will be unavailable.");
+            return new PrismaClient() as any;
+        }
         throw new Error("Missing DATABASE_URL");
     }
     const pool = new Pool({

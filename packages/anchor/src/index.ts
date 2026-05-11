@@ -1,5 +1,6 @@
 import { Program, Idl, AnchorProvider } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
+export { default as idl } from "../idl/contract_solrent.json";
 import idl from "../idl/contract_solrent.json";
 
 export const PROGRAM_ID = new PublicKey("FkrwjubsyZtMnyHAiop31wSUAEcdRnb3VpvADtMfw8Nw");

@@ -4,6 +4,18 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "JWT_SECRET",
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "NEXT_PUBLIC_SOLANA_RPC_URL",
+        "NEXT_PUBLIC_SOLANA_CLUSTER",
+        "NEXT_PUBLIC_USDC_DEVNET_MINT",
+        "SOLANA_FAUCET_SECRET_KEY",
+        "SOLANA_TEST_USDC_MINT"
+      ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
