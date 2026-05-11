@@ -31,7 +31,7 @@ export const Footer = () => {
                     </div>
                 </div>
 
-                {/* Product Column */}
+
                 <div className="flex flex-col gap-6">
                     <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary-400">Product</h4>
                     <nav className="flex flex-col gap-4 text-primary-200/60 text-sm font-bold">
@@ -42,7 +42,7 @@ export const Footer = () => {
                     </nav>
                 </div>
 
-                {/* Legal Column */}
+
                 <div className="flex flex-col gap-6">
                     <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary-400">Legal</h4>
                     <nav className="flex flex-col gap-4 text-primary-200/60 text-sm font-bold">
@@ -52,12 +52,12 @@ export const Footer = () => {
                     </nav>
                 </div>
 
-                {/* Newsletter Column */}
+
                 <div className="flex flex-col gap-6">
                     <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary-400">Status</h4>
                     <div className="bg-primary-900/40 border border-primary-800/50 rounded-2xl p-4 flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-secondary-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                        <span className="text-xs font-bold text-primary-200">Mainnet Beta Live</span>
+                        <span className="text-xs font-bold text-primary-200"> Devnet Beta Live</span>
                     </div>
                     <p className="text-[10px] text-primary-200/40 font-medium leading-relaxed uppercase tracking-widest">
                         SolRent is a non-custodial protocol. Users interact directly with Solana smart contracts.
@@ -66,7 +66,7 @@ export const Footer = () => {
 
             </div>
 
-            {/* Bottom Bar */}
+
             <div className="max-w-7xl mx-auto pt-12 border-t border-primary-900 flex flex-col md:flex-row justify-between items-center gap-6">
                 <p className="text-primary-200/40 text-[11px] font-bold uppercase tracking-widest">
                     © 2026 SolRent Protocol. Built for the Solana Global Hackathon.

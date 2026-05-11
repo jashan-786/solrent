@@ -2,7 +2,7 @@
 
 SolRent is a decentralized property management platform built on the Solana blockchain. It automates rent collection, simplifies lease management, and provides NFT-based rental receipts, offering a transparent, efficient, and cryptographically secure solution for both landlords and tenants.
 
-![SolRent Landing Page](https://via.placeholder.com/1200x600?text=SolRent+Dashboard+Preview)
+https://solrent-web.vercel.app/
 
 ## 🚀 Key Features
 
