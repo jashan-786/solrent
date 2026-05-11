@@ -28,7 +28,7 @@ const BuildingCard = ({ building }: { building: any }) => {
                         <div className="absolute top-4 left-4">
                             <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-sm">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-primary-900">
-                                    {building.totalUnits || 0} Units
+                                    {building.units || 0} Units
                                 </p>
                             </div>
                         </div>
@@ -60,7 +60,7 @@ const BuildingCard = ({ building }: { building: any }) => {
                             <div className="space-y-1">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-text-400">Occupancy</p>
                                 <p className="text-xl font-black text-primary-900">
-                                    {Math.round((building.occupiedUnits / (building.totalUnits || 1)) * 100)}%
+                                    {Math.round(((building.occupied || 0) / (building.units || 1)) * 100)}%
                                     <span className="text-xs ml-1.5 text-text-400 font-bold uppercase">Full</span>
                                 </p>
                             </div>
@@ -120,7 +120,7 @@ export default function Buildings({
         
         const matchesCity = !cityFilter || building.city === cityFilter;
         
-        const occupancyRate = building.totalUnits > 0 ? (building.occupiedUnits / building.totalUnits) : 0;
+        const occupancyRate = (building.units || 0) > 0 ? ((building.occupied || 0) / building.units) : 0;
         const matchesOccupancy = !occupancyFilter || 
             (occupancyFilter === "occupied" ? occupancyRate > 0.5 : occupancyRate <= 0.5);
 
@@ -131,8 +131,8 @@ export default function Buildings({
         if (sortBy === "name") return a.name.localeCompare(b.name);
         if (sortBy === "yield") return (b.monthlyyield || 0) - (a.monthlyyield || 0);
         if (sortBy === "occupancy") {
-            const rateA = a.totalUnits > 0 ? a.occupiedUnits / a.totalUnits : 0;
-            const rateB = b.totalUnits > 0 ? b.occupiedUnits / b.totalUnits : 0;
+            const rateA = (a.units || 0) > 0 ? (a.occupied || 0) / a.units : 0;
+            const rateB = (b.units || 0) > 0 ? (b.occupied || 0) / b.units : 0;
             return rateB - rateA;
         }
         return 0;

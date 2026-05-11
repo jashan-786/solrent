@@ -443,13 +443,17 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                         <div className="grid grid-cols-2 gap-4">
                             <div className="p-3 bg-surface-secondary rounded-lg text-center">
                                 <Users size={16} className="mx-auto mb-1 text-sol-indigo" />
-                                <p className="text-[10px] text-text-grey uppercase">Retention</p>
-                                <p className="font-bold text-auth-navy">92%</p>
+                                <p className="text-[10px] text-text-grey uppercase">Occupancy Rate</p>
+                                <p className="font-bold text-auth-navy">
+                                    {building.units ? Math.round(((building.occupied || 0) / building.units) * 100) : 0}%
+                                </p>
                             </div>
                             <div className="p-3 bg-surface-secondary rounded-lg text-center">
                                 <Wallet size={16} className="mx-auto mb-1 text-sol-indigo" />
                                 <p className="text-[10px] text-text-grey uppercase">Avg Rent</p>
-                                <p className="font-bold text-auth-navy">2.1k USDC</p>
+                                <p className="font-bold text-auth-navy">
+                                    {building.units ? Math.round((building.monthlyyield || 0) / building.units).toLocaleString() : "0"} USDC
+                                </p>
                             </div>
                         </div>
                     </Card>

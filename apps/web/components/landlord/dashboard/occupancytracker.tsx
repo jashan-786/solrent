@@ -23,7 +23,7 @@ const OccupancyComponent = ({ name, percentage }: { name: string, percentage: nu
                 <span>{name}</span>
                 <span className="text-solrent-emerald">{percentage}%</span>
             </div>
-            <Progress value={100} className="h-1.5 bg-gray-100" />
+            <Progress value={percentage} className="h-1.5 bg-gray-100" />
         </div>
     )
 }

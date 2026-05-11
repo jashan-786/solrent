@@ -39,17 +39,17 @@ export async function GET(req: NextRequest) {
                 landlordId: b.landlordId,
                 createdAt: b.createdAt,
                 updatedAt: b.updatedAt,
-                totalUnits,
-                occupiedUnits,
+                units: totalUnits,
+                occupied: occupiedUnits,
                 monthlyyield: b.units.reduce((sum, u) => sum + u.rentAmount, 0),
                 actualYield: monthlyYield,
                 img: "/building-landing.png"
             };
         });
 
-        const totalMonthlyRevenue = mappedBuildings.reduce((sum, b) => sum + b.monthlyyield, 0);
-        const totalOccupied = mappedBuildings.reduce((sum, b) => sum + b.occupiedUnits, 0);
-        const totalUnitsAll = mappedBuildings.reduce((sum, b) => sum + b.totalUnits, 0);
+        const totalMonthlyRevenue = mappedBuildings.reduce((sum, b) => sum + (Number(b.monthlyyield) || 0), 0);
+        const totalOccupied = mappedBuildings.reduce((sum, b) => sum + (Number(b.occupied) || 0), 0);
+        const totalUnitsAll = mappedBuildings.reduce((sum, b) => sum + (Number(b.units) || 0), 0);
         const occupancyRate = totalUnitsAll === 0 ? 0 : (totalOccupied / totalUnitsAll) * 100;
 
         return NextResponse.json({
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
         });
 
     } catch (error) {
-        
+
         return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
     }
 }
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, building: newBuilding }, { status: 201 });
 
     } catch (error) {
-        
+
         return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
     }
 }
