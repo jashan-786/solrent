@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Lease not found" }, { status: 404 });
         }
 
-        
+
 
         const payment = await prisma.payment.create({
             data: {
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
                 stablecoin: lease.stablecoin || "USDC",
             },
         });
-        
+
 
         if (status === "COMPLETED") {
             const currentDue = lease.nextDueTimestamp ? Number(lease.nextDueTimestamp) : Math.floor(new Date(lease.startDate).getTime() / 1000);
@@ -70,13 +70,13 @@ export async function POST(req: NextRequest) {
                     nextDueTimestamp: nextDue,
                 },
             });
-            
+
         }
 
         return NextResponse.json({ success: true, message: "Payment synced successfully" });
 
     } catch (error: any) {
-        
+
         return NextResponse.json({ success: false, message: "Server error syncing payment" }, { status: 500 });
     }
 }
