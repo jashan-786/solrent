@@ -58,32 +58,67 @@ SolRent is a decentralized property management platform built on the Solana bloc
    git clone https://github.com/your-repo/solrent.git
    cd solrent
    ```
+### 1. Environment Configuration
 
-2. Install dependencies:
-   ```sh
-   pnpm install
-   ```
+Create a `.env` file in the root directory (and `apps/web/.env`) with the following variables:
 
-3. Set up environment variables:
-   Create a `.env` file in `apps/web/` and add the necessary variables:
-   ```env
-   DATABASE_URL="postgresql://..."
-   NEXT_PUBLIC_SOLANA_RPC_URL="https://api.devnet.solana.com"
-   NEXT_PUBLIC_USDC_DEVNET_MINT="4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
-   SUPABASE_URL="https://..."
-   SUPABASE_SERVICE_ROLE_KEY="..."
-   JWT_SECRET="..."
-   ```
+```bash
+# --- Database (Supabase) ---
+DATABASE_URL="postgresql://postgres..."
+DIRECT_URL="postgresql://postgres..."
 
-4. Initialize the database:
-   ```sh
-   pnpm --filter web prisma db push
-   ```
+# --- Authentication ---
+JWT_SECRET="your-secret-here"
 
-5. Run the development server:
-   ```sh
-   pnpm dev
-   ```
+# --- Storage (Supabase) ---
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="your-key"
+SUPABASE_LEASE_DOCS_BUCKET="lease-documents"
+
+# --- Solana Network ---
+NEXT_PUBLIC_SOLANA_CLUSTER="devnet"
+NEXT_PUBLIC_SOLANA_RPC_URL="https://devnet.helius-rpc.com/?api-key=..."
+
+# --- Token Mints ---
+NEXT_PUBLIC_USDC_DEVNET_MINT="3mY38dGsJrf5cq1UA3ZK6QpkDcprxaRiDq1GRWu74wXT"
+SOLANA_TEST_USDC_MINT="3mY38dGsJrf5cq1UA3ZK6QpkDcprxaRiDq1GRWu74wXT"
+
+# --- Automated Collection Bot (Cron) ---
+SOLANA_FAUCET_SECRET_KEY="[your-bot-private-key-array]"
+CRON_SECRET="your-random-cron-password"
+```
+
+### 2. Installation & Setup
+
+```bash
+# Install dependencies
+pnpm install
+
+# Generate Prisma Client
+pnpm postinstall
+
+# Run database migrations
+npx prisma db push
+
+# Start the development server
+pnpm dev
+```
+
+### 3. Vercel Deployment (Monorepo)
+
+When deploying to Vercel, ensure the following:
+1.  **Framework Preset**: Next.js
+2.  **Root Directory**: `apps/web`
+3.  **Environment Variables**: Add all variables from the list above to the Vercel Dashboard.
+4.  **Turbo Config**: All environment variables must be listed in the `globalEnv` or task `env` in `turbo.json`.
+
+---
+
+## 🤖 Automated Rent Collection
+SolRent features a built-in collection bot located at `/api/cron/collect`. 
+- **Trigger**: Can be scheduled via `vercel.json` or a manual CRON task.
+- **Security**: Requires a `Bearer {CRON_SECRET}` authorization header.
+- **Function**: Automatically executes due payments using the server-side bot wallet.
 
 ## 🔐 Security & Blockchain
 

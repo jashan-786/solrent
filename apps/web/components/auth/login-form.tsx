@@ -3,19 +3,17 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@repo/ui/components/ui/card";
 import { Button } from "@repo/ui/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@repo/ui/components/ui/tabs";
-import { Wallet, User, Building2 } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useAuth } from "@/store/useAuth";
 import axios from "axios";
-import bs58 from "bs58";
 
 export const LoginForm = () => {
     const { publicKey, signMessage, connected, disconnect } = useWallet();
     const { setVisible } = useWalletModal();
     const { setUser } = useAuth();
-    
+
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -43,11 +41,11 @@ export const LoginForm = () => {
 
             if (res.data.success) {
                 setUser(res.data.user);
-                
+
                 window.location.href = res.data.user.role === "LANDLORD" ? "/landlord/dashboard" : "/tenant/dashboard";
             }
         } catch (err: any) {
-            
+
             setError(err.response?.data?.error || err.response?.data?.message || "Authentication failed. Make sure you have an account.");
         } finally {
             setIsLoading(false);
@@ -65,7 +63,7 @@ export const LoginForm = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                
+
                 {error && (
                     <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-lg text-center">
                         {error}
@@ -73,8 +71,8 @@ export const LoginForm = () => {
                 )}
 
                 <div className="flex flex-col gap-4">
-                    <Button 
-                        onClick={handleLogin} 
+                    <Button
+                        onClick={handleLogin}
                         disabled={isLoading}
                         className="w-full py-6 text-base font-bold bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center gap-2"
                     >
@@ -89,8 +87,8 @@ export const LoginForm = () => {
                     </Button>
 
                     {connected && publicKey && (
-                        <button 
-                            onClick={() => disconnect()} 
+                        <button
+                            onClick={() => disconnect()}
                             className="text-xs text-text-400 hover:text-text-600 underline"
                         >
                             Disconnect {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
