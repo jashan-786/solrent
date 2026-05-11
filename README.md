@@ -63,29 +63,36 @@ https://solrent-web.vercel.app/
 Create a `.env` file in the root directory (and `apps/web/.env`) with the following variables:
 
 ```bash
-# --- Database (Supabase) ---
-DATABASE_URL="postgresql://postgres..."
-DIRECT_URL="postgresql://postgres..."
+# SolRent Master Environment Template (Example)
+# Copy this to .env.local and fill in the values
+
+# --- Database ---
+DATABASE_URL="postgresql://user:pass@host:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://user:pass@host:5432/postgres"
 
 # --- Authentication ---
-JWT_SECRET="your-secret-here"
+JWT_SECRET="your-secure-jwt-secret"
 
-# --- Storage (Supabase) ---
-SUPABASE_URL="https://your-project.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="your-key"
-SUPABASE_LEASE_DOCS_BUCKET="lease-documents"
-
-# --- Solana Network ---
+# --- Solana Network & RPC ---
 NEXT_PUBLIC_SOLANA_CLUSTER="devnet"
-NEXT_PUBLIC_SOLANA_RPC_URL="https://devnet.helius-rpc.com/?api-key=..."
+NEXT_PUBLIC_SOLANA_RPC_URL="https://your-helius-rpc-url"
+SOLANA_DEVNET_RPC_URL="https://api.devnet.solana.com"
+NEXT_PUBLIC_HELIUS_DEVNET_RPC_URL="https://your-helius-rpc-url"
 
-# --- Token Mints ---
+# --- Solana Assets (USDC) ---
 NEXT_PUBLIC_USDC_DEVNET_MINT="3mY38dGsJrf5cq1UA3ZK6QpkDcprxaRiDq1GRWu74wXT"
 SOLANA_TEST_USDC_MINT="3mY38dGsJrf5cq1UA3ZK6QpkDcprxaRiDq1GRWu74wXT"
 
-# --- Automated Collection Bot (Cron) ---
-SOLANA_FAUCET_SECRET_KEY="[your-bot-private-key-array]"
-CRON_SECRET="your-random-cron-password"
+# --- Solana Faucet ---
+SOLANA_FAUCET_SECRET_KEY="your-faucet-secret-key-bs58-or-json"
+
+# --- Supabase Storage ---
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-key"
+SUPABASE_LEASE_DOCS_BUCKET="lease-documents"
+
+# --- Automation & Cron ---
+CRON_SECRET="your-cron-secret"
 ```
 
 ### 2. Installation & Setup
