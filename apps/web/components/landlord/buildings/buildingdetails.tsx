@@ -138,18 +138,28 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                     });
 
                 } catch (err: any) {
+                    let friendlyError = err.message;
+                    if (err.message?.includes("LeaseNotActive") || err.message?.includes("6001")) {
+                        friendlyError = "Tenant has not enabled Auto-Pay yet.";
+                    } else if (err.message?.includes("insufficient funds")) {
+                        friendlyError = "Tenant has insufficient funds.";
+                    }
                     
+                    setCollectionProgress(`Failed for ${lease.tenant.name}: ${friendlyError}`);
 
                     try {
                         await axios.post("/api/landlord/payments/sync", {
                             leaseId: lease.id,
                             amount: lease.monthlyRent,
                             status: "FAILED",
-                            error: err.message
+                            error: friendlyError
                         });
                     } catch (syncErr) {
-                        
+                        // Ignore sync error
                     }
+                    
+                    // Wait a moment so the user can read the error before moving to next
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
 
