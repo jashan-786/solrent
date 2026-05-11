@@ -59,11 +59,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         
         const mappedBuilding = {
             ...buildingData,
-            totalUnits,
-            occupiedUnits,
-            projectedYield,
+            units: totalUnits,
+            occupied: occupiedUnits,
+            monthlyyield: projectedYield,
             actualYield,
-            units: rawUnits.map(unit => ({
+            units_list: rawUnits.map(unit => ({
                 ...unit,
                 leases: unit.leases.map(lease => ({
                     ...lease,
