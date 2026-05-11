@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
             lease: {
                 ...payment.lease,
                 onChainId: payment.lease.onChainId?.toString() || null,
+                nextDueTimestamp: payment.lease.nextDueTimestamp?.toString() || null,
             }
         }));
 
