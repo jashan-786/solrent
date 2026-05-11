@@ -1,5 +1,6 @@
 import { RegisterForm } from "@/components/auth/register-form";
-import { Home, Link } from "lucide-react";
+import { Home } from "lucide-react";
+import Link from "next/link";
 
 export default function RegisterPage() {
     return (
