@@ -93,6 +93,17 @@ export async function POST(req: NextRequest) {
         const startDate = new Date(data.startDate);
         const endDate = new Date(data.endDate);
 
+        // Safe conversion for BigInt fields
+        const onChainIdBigInt = data.onChainId ? BigInt(data.onChainId) : null;
+        
+        let nextDueTimestamp: bigint | null = null;
+        if (data.startDate) {
+            const ts = Math.floor(new Date(data.startDate).getTime() / 1000);
+            if (!isNaN(ts)) {
+                nextDueTimestamp = BigInt(ts);
+            }
+        }
+
         const lease = await prisma.lease.create({
             data: {
                 tenantId: tenant.id,
@@ -105,12 +116,12 @@ export async function POST(req: NextRequest) {
                 endDate,
                 status: "PENDING",
                 autoPayEnabled: data.autoPayEnabled,
-                onChainId: data.onChainId ? BigInt(data.onChainId) : null,
+                onChainId: onChainIdBigInt,
                 onChainAddress: data.onChainAddress || null,
                 leaseNftMint: data.leaseNftMint || null,
                 leaseDocumentUrl: data.leaseDocumentUrl || null,
                 transactionHash: data.transactionHash || null,
-                nextDueTimestamp: data.startDate ? BigInt(Math.floor(new Date(data.startDate).getTime() / 1000)) : null,
+                nextDueTimestamp,
             },
         });
 
@@ -145,6 +156,7 @@ export async function POST(req: NextRequest) {
         const serializedLease = {
             ...lease,
             onChainId: lease.onChainId?.toString() || null,
+            nextDueTimestamp: lease.nextDueTimestamp?.toString() || null,
         };
 
         return NextResponse.json({

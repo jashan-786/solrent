@@ -107,6 +107,7 @@ export async function GET() {
             lease: payment.lease ? {
                 ...payment.lease,
                 onChainId: payment.lease.onChainId?.toString() || null,
+                nextDueTimestamp: payment.lease.nextDueTimestamp?.toString() || null,
             } : null
         }));
 

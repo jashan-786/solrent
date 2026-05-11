@@ -54,18 +54,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         const projectedYield = building.units.reduce((sum, u) => sum + u.rentAmount, 0);
         const actualYield = building.units.reduce((sum, u) => sum + (u.occupied ? u.rentAmount : 0), 0);
 
+        // Clean mapping to avoid BigInt serialization issues
+        const { units: rawUnits, ...buildingData } = building;
+        
         const mappedBuilding = {
-            ...building,
-            units: totalUnits,
-            occupied: occupiedUnits,
-            monthlyyield: projectedYield,
-            actualYield: actualYield,
-            units_list: building.units.map(unit => ({
+            ...buildingData,
+            totalUnits,
+            occupiedUnits,
+            projectedYield,
+            actualYield,
+            units: rawUnits.map(unit => ({
                 ...unit,
                 leases: unit.leases.map(lease => ({
                     ...lease,
                     onChainId: lease.onChainId?.toString() || null,
-                    nextDueTimestamp: (lease as any).nextDueTimestamp?.toString() || null,
+                    nextDueTimestamp: lease.nextDueTimestamp?.toString() || null,
                 }))
             })),
             img: "/building-landing.png"
