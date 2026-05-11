@@ -93,6 +93,8 @@ export async function GET(req: NextRequest) {
                 },
                 activeLease: activeLease ? {
                     id: activeLease.id,
+                    status: activeLease.status,
+                    effectiveStatus: activeLease.effectiveStatus,
                     onChainId: activeLease.onChainId?.toString(),
                     monthlyRent: activeLease.monthlyRent,
                     stablecoin: activeLease.stablecoin,

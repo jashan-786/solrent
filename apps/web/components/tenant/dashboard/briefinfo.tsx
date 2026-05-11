@@ -30,9 +30,9 @@ export default function BriefInfo({ lease, nextPayment }: { lease: any, nextPaym
         },
         {
             title: "Lease Status",
-            value: lease ? "Active" : "None",
-            description: lease ? `Expires ${new Date(lease.endDate).toLocaleDateString()}` : "Not Rented",
-            icon: <ShieldCheck size={16} className="text-secondary-500" />,
+            value: lease ? (lease.status === "PENDING" ? "Pending" : "Active") : "None",
+            description: lease ? (lease.status === "PENDING" ? "Awaiting your signature" : `Expires ${new Date(lease.endDate).toLocaleDateString()}`) : "Not Rented",
+            icon: lease?.status === "PENDING" ? <Clock size={16} className="text-secondary-500 animate-pulse" /> : <ShieldCheck size={16} className="text-secondary-500" />,
         },
         {
             title: "Monthly Rent",

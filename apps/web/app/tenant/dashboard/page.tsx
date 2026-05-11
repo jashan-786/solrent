@@ -37,6 +37,19 @@ export default function TenantDashboardPage() {
                     </AlertDescription>
                 </Alert>
             )}
+
+            {activeLease?.status === "PENDING" && (
+                <Alert className="bg-sol-indigo/5 border-sol-indigo/20 text-sol-indigo rounded-2xl mb-4">
+                    <AlertCircle className="h-4 w-4 text-sol-indigo" />
+                    <AlertTitle className="font-bold">Lease Acceptance Required</AlertTitle>
+                    <AlertDescription className="font-medium flex items-center justify-between">
+                        <span>A new lease has been created for you. Please review and accept the terms to activate your tenancy.</span>
+                        <a href="/tenant/leases" className="px-4 py-1 bg-sol-indigo text-white rounded-lg text-sm font-bold hover:bg-sol-indigo/90 transition-colors ml-4">
+                            Review Lease
+                        </a>
+                    </AlertDescription>
+                </Alert>
+            )}
             <div className="flex justify-between items-center">
                 <TenantIntro name={dashboard?.profile?.name} />
                 {dashboard?.nextPayment && (
