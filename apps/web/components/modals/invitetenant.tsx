@@ -103,7 +103,7 @@ export default function InviteTenantModal({ isVerified = true }: { isVerified?: 
                                 >
                                     <option value="">All Units / General Invite</option>
                                     {unitsData?.units?.map((u: any) => (
-                                        <option key={u.id} value={u.id}>{u.unitNumber} (${u.rentAmount})</option>
+                                        <option key={u.id} value={u.id}>{u.unitNumber} ({u.rentAmount} USDC)</option>
                                     ))}
                                 </select>
                             </div>

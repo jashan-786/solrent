@@ -35,6 +35,8 @@ export async function GET(req: NextRequest) {
     }
 }
 
+import { userSchema } from "@/app/api/zod";
+
 export async function PUT(req: NextRequest) {
     try {
         const session = await getSession();
@@ -43,7 +45,18 @@ export async function PUT(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { name, email, phone } = body;
+        
+        // Validate partial update
+        const validation = userSchema.partial().safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({ 
+                success: false, 
+                message: "Validation failed", 
+                errors: validation.error.format() 
+            }, { status: 400 });
+        }
+
+        const { name, email, phone, walletAddress } = validation.data;
 
         const updatedUser = await prisma.user.update({
             where: { id: session.id },
@@ -51,6 +64,7 @@ export async function PUT(req: NextRequest) {
                 ...(name && { name }),
                 ...(email && { email }),
                 ...(phone !== undefined && { phone }),
+                ...(walletAddress && { walletAddress }),
             },
             select: {
                 id: true,

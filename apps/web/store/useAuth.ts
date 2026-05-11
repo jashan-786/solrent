@@ -7,6 +7,7 @@ interface User {
     role: "LANDLORD" | "TENANT";
     name: string;
     email: string;
+    phone?: string;
     landlordBuildingId?: string;
 }
 

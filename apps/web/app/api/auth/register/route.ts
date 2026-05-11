@@ -4,6 +4,7 @@ import { z } from "zod";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 import { signJWT } from "@/lib/auth";
+import { PublicKey } from "@solana/web3.js";
 
 const registerSchema = z.object({
     code: z.string().min(1, "Invite code is required"),
@@ -24,6 +25,19 @@ export async function POST(req: NextRequest) {
         }
 
         const { code, walletAddress, signature, message, name, email } = validation.data;
+
+        // Strict Solana wallet validation
+        try {
+            const pubKey = new PublicKey(walletAddress);
+            if (!PublicKey.isOnCurve(pubKey.toBytes())) {
+                throw new Error("Wallet address must be a valid user account (on-curve)");
+            }
+        } catch (e: any) {
+            return NextResponse.json({ 
+                success: false, 
+                message: e.message || "Invalid Solana wallet address" 
+            }, { status: 400 });
+        }
 
         const signatureUint8 = new Uint8Array(signature);
         const messageUint8 = new TextEncoder().encode(message);

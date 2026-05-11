@@ -14,9 +14,10 @@ interface ProfileProps {
     setEmail: (val: string) => void;
     phone: string;
     setPhone: (val: string) => void;
+    errors?: Record<string, string>;
 }
 
-export function Profile({ name, setName, email, setEmail, phone, setPhone }: ProfileProps) {
+export function Profile({ name, setName, email, setEmail, phone, setPhone, errors = {} }: ProfileProps) {
     const { user } = useAuth();
 
     return (
@@ -38,16 +39,18 @@ export function Profile({ name, setName, email, setEmail, phone, setPhone }: Pro
                         <Input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="h-12 rounded-xl bg-background-50 border-none font-bold text-primary-900"
+                            className={`h-12 rounded-xl bg-background-50 border-none font-bold text-primary-900 ${errors.name ? 'ring-1 ring-destructive' : ''}`}
                         />
+                        {errors.name && <p className="text-[10px] font-bold text-destructive px-1">{errors.name}</p>}
                     </div>
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-text-400">Email Address</Label>
                         <Input
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="h-12 rounded-xl bg-background-50 border-none font-bold text-primary-900"
+                            className={`h-12 rounded-xl bg-background-50 border-none font-bold text-primary-900 ${errors.email ? 'ring-1 ring-destructive' : ''}`}
                         />
+                        {errors.email && <p className="text-[10px] font-bold text-destructive px-1">{errors.email}</p>}
                     </div>
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-text-400">Wallet Address</Label>
@@ -59,8 +62,9 @@ export function Profile({ name, setName, email, setEmail, phone, setPhone }: Pro
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             placeholder="+1 (xxx) xxx-xxxx"
-                            className="h-12 rounded-xl bg-background-50 border-none font-bold text-primary-900"
+                            className={`h-12 rounded-xl bg-background-50 border-none font-bold text-primary-900 ${errors.phone ? 'ring-1 ring-destructive' : ''}`}
                         />
+                        {errors.phone && <p className="text-[10px] font-bold text-destructive px-1">{errors.phone}</p>}
                     </div>
                 </div>
             </Card>

@@ -3,10 +3,18 @@ import { Badge } from "@repo/ui/components/ui/badge";
 import { Button } from "@repo/ui/components/ui/button";
 import { Card } from "@repo/ui/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/components/ui/tabs";
-import { ArrowLeft, MapPin, Users, Wallet, TrendingUp, History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AddUnitModal } from "@/components/modals/addunitmodal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/ui/components/ui/table";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@repo/ui/components/ui/dropdown-menu";
+import { ArrowLeft, MapPin, Users, Wallet, TrendingUp, History, MoreHorizontal } from "lucide-react";
 
 import { useState } from "react";
 import { useAuth } from "@/store/useAuth";
@@ -127,7 +135,11 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                     tx.feePayer = publicKey;
 
                     const sig = await sendTransaction(tx, connection, { signers: [nftMint] });
-                    await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+                    const confirmation = await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+
+                    if (confirmation.value.err) {
+                        throw new Error(`Transaction failed on-chain: ${JSON.stringify(confirmation.value.err)}`);
+                    }
 
                     await axios.post("/api/landlord/payments/sync", {
                         leaseId: lease.id,
@@ -144,7 +156,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                     } else if (err.message?.includes("insufficient funds")) {
                         friendlyError = "Tenant has insufficient funds.";
                     }
-                    
+
                     setCollectionProgress(`Failed for ${lease.tenant.name}: ${friendlyError}`);
 
                     try {
@@ -157,14 +169,14 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                     } catch (syncErr) {
                         // Ignore sync error
                     }
-                    
+
                     // Wait a moment so the user can read the error before moving to next
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
 
             setCollectionProgress("Collection complete!");
-            mutate(`/api/landlord/building/${building.id}`); 
+            mutate(`/api/landlord/building/${building.id}`);
             mutate("/api/landlord/dashboard");
             setTimeout(() => {
                 setIsCollecting(false);
@@ -172,7 +184,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
             }, 3000);
 
         } catch (error: any) {
-            
+
             alert("Error during rent collection.");
             setIsCollecting(false);
             setCollectionProgress("");
@@ -241,7 +253,8 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                             <TableHead className="text-tiny font-bold uppercase text-text-400">Tenant</TableHead>
                                             <TableHead className="text-tiny font-bold uppercase text-text-400">Rent</TableHead>
                                             <TableHead className="text-tiny font-bold uppercase text-text-400">Type</TableHead>
-                                            <TableHead className="text-tiny font-bold uppercase text-text-400 text-right">Status</TableHead>
+                                            <TableHead className="text-tiny font-bold uppercase text-text-400">Status</TableHead>
+                                            <TableHead className="text-tiny font-bold uppercase text-text-400 text-right pr-6">...</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -261,12 +274,36 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                             <span className="text-text-400 italic">No tenant</span>
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="text-text-600 font-medium">${unit.rentAmount}</TableCell>
+                                                    <TableCell className="text-text-600 font-medium">{unit.rentAmount} USDC</TableCell>
                                                     <TableCell className="text-text-500 text-xs">{unit.bedrooms}B / {unit.bathrooms}B</TableCell>
-                                                    <TableCell className="text-right">
+                                                    <TableCell>
                                                         <Badge className={unit.occupied ? "bg-sol-emerald/10 text-sol-emerald" : "bg-secondary-500/10 text-secondary-500"}>
                                                             {unit.occupied ? "Occupied" : "Vacant"}
                                                         </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-6">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl">
+                                                                <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-text-400">Unit Actions</DropdownMenuLabel>
+                                                                <DropdownMenuItem 
+                                                                    onClick={() => router.push('/landlord/leases')}
+                                                                    className="gap-2 font-bold cursor-pointer"
+                                                                >
+                                                                    View Active Lease
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem 
+                                                                    onClick={() => alert("Edit unit feature coming soon")}
+                                                                    className="gap-2 font-bold cursor-pointer"
+                                                                >
+                                                                    Edit Unit Details
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </TableCell>
                                                 </TableRow>
                                             ))
@@ -354,13 +391,13 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                             <div>
                                 <p className="text-tiny font-bold opacity-60 uppercase">Projected Yield</p>
                                 <h2 className="text-2xl text-white">
-                                    ${building.monthlyyield ? building.monthlyyield.toLocaleString() : "0"}
+                                    {building.monthlyyield ? building.monthlyyield.toLocaleString() : "0"} <span className="text-sm opacity-60 font-bold">USDC</span>
                                 </h2>
                             </div>
                             <div className="text-right">
                                 <p className="text-tiny font-bold text-sol-emerald uppercase">Available Now</p>
                                 <h2 className="text-2xl text-sol-emerald">
-                                    ${(() => {
+                                    {(() => {
                                         const now = Math.floor(Date.now() / 1000);
                                         const collectable = (building as any).units_list
                                             ?.flatMap((u: any) => u.leases || [])
@@ -371,7 +408,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                             })
                                             .reduce((sum: number, l: any) => sum + (l.monthlyRent || 0), 0);
                                         return collectable ? collectable.toLocaleString() : "0";
-                                    })()}
+                                    })()} <span className="text-sm opacity-60 font-bold">USDC</span>
                                 </h2>
                             </div>
                         </div>
@@ -412,10 +449,11 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                             <div className="p-3 bg-surface-secondary rounded-lg text-center">
                                 <Wallet size={16} className="mx-auto mb-1 text-sol-indigo" />
                                 <p className="text-[10px] text-text-grey uppercase">Avg Rent</p>
-                                <p className="font-bold text-auth-navy">$2.1k</p>
+                                <p className="font-bold text-auth-navy">2.1k USDC</p>
                             </div>
                         </div>
                     </Card>
+
                 </div>
             </div>
         </div>

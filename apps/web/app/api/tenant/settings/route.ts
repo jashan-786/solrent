@@ -21,6 +21,17 @@ export async function GET(req: NextRequest) {
                 avatarUrl: true,
                 preferredCoin: true,
                 createdAt: true,
+                tenantLeases: {
+                    where: { status: "ACTIVE" },
+                    take: 1,
+                    select: {
+                        id: true,
+                        leaseDocumentUrl: true,
+                        onChainAddress: true,
+                        leaseNftMint: true,
+                        startDate: true,
+                    }
+                }
             }
         });
 

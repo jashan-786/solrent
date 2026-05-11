@@ -36,7 +36,7 @@ export default function BriefInfo({ lease, nextPayment }: { lease: any, nextPaym
         },
         {
             title: "Monthly Rent",
-            value: lease ? `${lease.monthlyRent?.toLocaleString()} ${lease.stablecoin || "USDC"}` : "$0",
+            value: lease ? `${lease.monthlyRent?.toLocaleString()} ${lease.stablecoin || "USDC"}` : "0 USDC",
             description: "On-Chain Verified",
             icon: <CircleCheckBig size={16} className="text-secondary-500" />,
         },

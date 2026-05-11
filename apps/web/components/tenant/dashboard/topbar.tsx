@@ -11,6 +11,7 @@ export default function TenantDashboardTopbar() {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [hasNewNotifications, setHasNewNotifications] = useState(true);
 
     const handleSearch = () => {
         if (!searchQuery.trim()) return;
@@ -24,6 +25,11 @@ export default function TenantDashboardTopbar() {
         } else if (q.includes("setting") || q.includes("profile") || q.includes("account")) {
             router.push("/tenant/settings");
         }
+    };
+
+    const handleOpenNotifications = () => {
+        setIsNotificationsOpen(true);
+        setHasNewNotifications(false);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -50,10 +56,12 @@ export default function TenantDashboardTopbar() {
                     variant="ghost"
                     size="icon"
                     className="relative rounded-xl h-10 w-10"
-                    onClick={() => setIsNotificationsOpen(true)}
+                    onClick={handleOpenNotifications}
                 >
                     <Bell className="h-4 w-4 text-text-500" />
-                    <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-destructive rounded-full" />
+                    {hasNewNotifications && (
+                        <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 bg-destructive rounded-full" />
+                    )}
                 </Button>
             </div>
 

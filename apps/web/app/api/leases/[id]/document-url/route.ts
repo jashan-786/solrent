@@ -30,40 +30,49 @@ export async function GET(
         });
 
         if (!lease || !lease.leaseDocumentUrl) {
-            return NextResponse.json({ success: false, message: "Lease document not found" }, { status: 404 });
+            return NextResponse.json({
+                success: false,
+                message: "Lease document path is missing in database.",
+                debug: { leaseId: id, foundLease: !!lease }
+            }, { status: 404 });
         }
 
         if (lease.leaseDocumentUrl.startsWith("http")) {
-            return NextResponse.json({ success: true, signedUrl: lease.leaseDocumentUrl });
+            return NextResponse.redirect(lease.leaseDocumentUrl);
         }
 
-        const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        const bucketName = process.env.SUPABASE_LEASE_DOCS_BUCKET || "lease-documents";
+        const supabaseUrl = process.env.SUPABASE_URL?.trim();
+        const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+        const bucketName = (process.env.SUPABASE_LEASE_DOCS_BUCKET || "lease-documents").trim();
 
         if (!supabaseUrl || !supabaseServiceRoleKey) {
-            return NextResponse.json({
-                success: false,
-                message: "Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
-            }, { status: 500 });
+            return NextResponse.json({ success: false, message: "Supabase config missing" }, { status: 500 });
         }
 
-        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+            auth: { persistSession: false }
+        });
+
+        const cleanPath = lease.leaseDocumentUrl.startsWith("/") 
+            ? lease.leaseDocumentUrl.slice(1) 
+            : lease.leaseDocumentUrl;
+
         const { data, error } = await supabase.storage
             .from(bucketName)
-            .createSignedUrl(lease.leaseDocumentUrl, 60);
+            .createSignedUrl(cleanPath, 3600); // 1 hour expiry
 
         if (error || !data?.signedUrl) {
-            return NextResponse.json({
-                success: false,
-                message: error?.message || "Failed to create signed URL",
+            return NextResponse.json({ 
+                success: false, 
+                message: error?.message || "Failed to generate signed URL",
+                path: cleanPath
             }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, signedUrl: data.signedUrl });
-} catch (error) {
-
-    return NextResponse.json({ success: false, message: "Server error generating signed URL" }, { status: 500 });
-}
+        // Automatically redirect the browser to the signed Supabase URL
+        return NextResponse.redirect(data.signedUrl);
+    } catch (error: any) {
+        return NextResponse.json({ success: false, message: "Server error", error: error?.message }, { status: 500 });
+    }
 }
 

@@ -15,57 +15,65 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 const BuildingCard = ({ building }: { building: any }) => {
     return (
-        <Card className=" border-none shadow-sm bg-surface-primary max-w-2xl p-0 gap-0 rounded-xl">
-            <CardContent className="p-0 m-0 rounded-xl h-full" >
-                <div className=" h-full grid grid-cols-1 md:grid-cols-12 gap-2 rounded-xl ">
-
-                    <div className=" h-48 md:h-full md:col-span-4 lg:col-span-4 rounded-l-xl bg-background-200">
+        <Card className="border-none shadow-md bg-white hover:shadow-xl transition-all duration-300 rounded-[32px] overflow-hidden group">
+            <CardContent className="p-0">
+                <div className="flex flex-col">
+                    <div className="h-48 w-full relative overflow-hidden">
                         <Image
                             src={building.img || "/building-landing.png"}
                             alt={building.name}
-                            width={500}
-                            height={500}
-                            className="object-cover w-full h-full rounded-l-xl"
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
+                        <div className="absolute top-4 left-4">
+                            <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-sm">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-primary-900">
+                                    {building.totalUnits || 0} Units
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className=" md:col-span-8 lg:col-span-8 md:h-full flex flex-col justify-between p-4">
+                    <div className="p-8 space-y-6">
                         <div className="flex justify-between items-start">
-                            <div>
-                                <h5 className=" font-heading text-primary-900 font-bold text-lg">
+                            <div className="space-y-1">
+                                <h3 className="font-black text-primary-900 text-2xl tracking-tight leading-tight">
                                     {building.name}
-                                </h5>
-                                <small className="flex items-center text-text-500 mt-1">
-                                    <span className="mr-1">📍</span> {building.address}, {building.city}
-                                </small>
+                                </h3>
+                                <div className="flex items-center gap-1.5 text-text-400">
+                                    <span className="text-sm">📍</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider leading-none">{building.city}</span>
+                                </div>
                             </div>
-                            <Button variant="ghost" size="icon" className="text-text-400">
+                            <Button variant="ghost" size="icon" className="text-text-300 hover:text-primary-900 rounded-xl">
                                 <MoreVertical className="h-5 w-5" />
                             </Button>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <p className="text-text-500 uppercase tracking-wider text-[10px] font-bold">Monthly Yield</p>
-                                <p className="text-sm font-bold text-secondary-500 mt-1">
-                                    {building.monthlyyield?.toLocaleString() || "0"} <span className="text-[10px] ml-0.5">USDC</span>
+                        <div className="grid grid-cols-2 gap-8 py-6 border-y border-background-50">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-text-400">Monthly Yield</p>
+                                <p className="text-xl font-black text-secondary-500">
+                                    {building.monthlyyield?.toLocaleString() || "0"} <span className="text-xs ml-0.5 opacity-70">USDC</span>
                                 </p>
                             </div>
-                            <div>
-                                <p className="text-text-500 uppercase tracking-wider text-[10px] font-bold">Occupancy</p>
-                                <small className=" font-bold text-primary-900 mt-1">
-                                    {building.occupiedUnits || 0} / {building.totalUnits || 0} Units
-                                </small>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-text-400">Occupancy</p>
+                                <p className="text-xl font-black text-primary-900">
+                                    {Math.round((building.occupiedUnits / (building.totalUnits || 1)) * 100)}%
+                                    <span className="text-xs ml-1.5 text-text-400 font-bold uppercase">Full</span>
+                                </p>
                             </div>
                         </div>
 
-                        <div className="flex gap-2 mt-6">
-                            <ViewDetailsButton building={building} />
+                        <div className="flex gap-3 pt-2">
+                            <div className="flex-1">
+                                <ViewDetailsButton building={building} />
+                            </div>
                             <AddUnitModal buildingId={building.id}>
                                 <Button
                                     variant="outline"
-                                    size="icon"
-                                    className="w-10 h-10 rounded-lg border-background-200 text-primary-900"
+                                    className="h-12 w-12 rounded-2xl border-background-200 text-primary-900 hover:bg-background-50 hover:border-primary-900/20 transition-all active:scale-95"
                                 >
                                     <Plus className="h-5 w-5" />
                                 </Button>

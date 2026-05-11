@@ -14,12 +14,60 @@ const PaymentTab = ({ payments, view }: { payments: any[], view: "upcoming" | "c
         setCurrentPage(1);
     }, [view]);
 
+    const handleExport = () => {
+        if (!payments || payments.length === 0) {
+            alert("No payments found to export.");
+            return;
+        }
+
+        const headers = ["Period", "Due Date", "Amount", "Stablecoin", "Status", "Date Paid", "Transaction Hash", "NFT Mint"];
+        
+        const rows = payments.map((p: any) => {
+            const period = new Date(p.dueDate).toLocaleString('default', { month: 'long', year: 'numeric' });
+            const dueDate = new Date(p.dueDate).toLocaleDateString();
+            const paidAt = p.paidAt ? new Date(p.paidAt).toLocaleDateString() : '—';
+            const status = p.status || 'N/A';
+            const txHash = p.transactionHash || '—';
+            const nftMint = p.nftReceiptMint || '—';
+            
+            return [
+                `"${period}"`,
+                dueDate,
+                p.amount,
+                p.stablecoin,
+                status,
+                paidAt,
+                `"${txHash}"`,
+                `"${nftMint}"`
+            ];
+        });
+
+        // Add UTF-8 BOM for Excel compatibility
+        const csvContent = "\uFEFF" + [headers, ...rows].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `solrent_my_payments_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     if (view === "receipts") {
         return (
             <div className="p-0 space-y-8 font-sans mt-6">
                 <div className="bg-white rounded-[32px] shadow-sm overflow-hidden border border-background-100">
                     <div className="p-8 bg-background-50/50 flex justify-between items-center border-b border-background-100">
                         <h2 className="text-2xl font-bold text-primary-900">On-Chain Receipts</h2>
+                        <Button 
+                            onClick={handleExport}
+                            variant="ghost" 
+                            className="text-secondary-600 hover:text-secondary-700 font-bold gap-2"
+                        >
+                            <Download className="w-4 h-4" /> Export History
+                        </Button>
                     </div>
                     <div className="p-0">
                         <div className="grid grid-cols-5 px-8 py-4 bg-background-50/30 text-[10px] font-bold uppercase tracking-widest text-text-400">
@@ -84,7 +132,11 @@ const PaymentTab = ({ payments, view }: { payments: any[], view: "upcoming" | "c
                     <h2 className="text-2xl font-bold text-primary-900">
                         {isUpcoming ? "Payment Schedule" : "Payment Journey Timeline"}
                     </h2>
-                    <Button variant="ghost" className="text-secondary-600 hover:text-secondary-700 font-bold gap-2">
+                    <Button 
+                        onClick={handleExport}
+                        variant="ghost" 
+                        className="text-secondary-600 hover:text-secondary-700 font-bold gap-2"
+                    >
                         <Download className="w-4 h-4" /> Export History
                     </Button>
                 </div>

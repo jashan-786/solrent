@@ -163,11 +163,15 @@ export default function AddLeaseModal({ isVerified = true }: { isVerified?: bool
                 const leaseSig = await sendTransaction(tx, connection);
 
                 setStatus("confirming");
-                await connection.confirmTransaction({
+                const leaseConfirmation = await connection.confirmTransaction({
                     signature: leaseSig,
                     blockhash,
                     lastValidBlockHeight,
                 }, "confirmed");
+
+                if (leaseConfirmation.value.err) {
+                    throw new Error(`Lease initialization failed on-chain: ${JSON.stringify(leaseConfirmation.value.err)}`);
+                }
 
                 setStatus("minting");
                 const nftMint = Keypair.generate();
@@ -209,11 +213,15 @@ export default function AddLeaseModal({ isVerified = true }: { isVerified?: bool
                 mintTx.feePayer = publicKey;
 
                 const mintSig = await sendTransaction(mintTx, connection, { signers: [nftMint] });
-                await connection.confirmTransaction({
+                const mintConfirmation = await connection.confirmTransaction({
                     signature: mintSig,
                     blockhash: mintBlockhash,
                     lastValidBlockHeight: mintBlockHeight,
                 }, "confirmed");
+
+                if (mintConfirmation.value.err) {
+                    throw new Error(`NFT Minting failed on-chain: ${JSON.stringify(mintConfirmation.value.err)}`);
+                }
 
                 setStatus("saving");
                 await axios.post("/api/landlord/leases", {
@@ -343,7 +351,7 @@ export default function AddLeaseModal({ isVerified = true }: { isVerified?: bool
                                                 <SelectContent>
                                                     {units.map((u: any) => (
                                                         <SelectItem key={u.id} value={u.id}>
-                                                            Unit {u.unitNumber} — {u.bedrooms}BR / ${u.rentAmount}
+                                                            Unit {u.unitNumber} — {u.bedrooms}BR / {u.rentAmount} USDC
                                                         </SelectItem>
                                                     ))}
                                                     {units.length === 0 && selectedBuildingId && (

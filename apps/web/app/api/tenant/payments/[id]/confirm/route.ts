@@ -25,8 +25,37 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                 transactionHash,
                 nftReceiptMint,
                 paidAt: new Date()
-            }
+            },
+            include: { lease: true }
         });
+
+        // Advance the Lease milestone
+        if (updatedPayment.lease) {
+            const currentDue = updatedPayment.lease.nextDueTimestamp 
+                ? Number(updatedPayment.lease.nextDueTimestamp) 
+                : Math.floor(new Date().getTime() / 1000);
+            
+            const nextDueSecs = currentDue + 2592000;
+
+            await prisma.lease.update({
+                where: { id: updatedPayment.leaseId },
+                data: {
+                    nextDueTimestamp: BigInt(nextDueSecs)
+                }
+            });
+
+            // Create next month's UPCOMING record
+            await prisma.payment.create({
+                data: {
+                    leaseId: updatedPayment.leaseId,
+                    buildingId: updatedPayment.buildingId,
+                    amount: updatedPayment.lease.monthlyRent,
+                    status: "UPCOMING",
+                    dueDate: new Date(nextDueSecs * 1000),
+                    stablecoin: updatedPayment.lease.stablecoin || "USDC",
+                }
+            });
+        }
 
         return NextResponse.json({ success: true, payment: updatedPayment });
 

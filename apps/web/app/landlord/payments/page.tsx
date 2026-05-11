@@ -54,28 +54,39 @@ export default function Payments() {
         }
 
         const headers = ["ID", "Tenant", "Email", "Building", "Amount", "Stablecoin", "Status", "Due Date", "Paid At", "TX Hash"];
-        const rows = filteredPayments.map((p: any) => [
-            p.id,
-            `"${p.lease?.tenant?.name || 'N/A'}"`,
-            p.lease?.tenant?.email || 'N/A',
-            `"${p.building?.name || 'N/A'}"`,
-            p.amount,
-            p.stablecoin,
-            p.status,
-            p.dueDate ? new Date(p.dueDate).toLocaleDateString() : 'N/A',
-            p.paidAt ? new Date(p.paidAt).toLocaleDateString() : 'N/A',
-            p.transactionHash || 'N/A'
-        ]);
+        
+        const rows = filteredPayments.map((p: any) => {
+            const tenantName = p.lease?.tenant?.name || 'N/A';
+            const buildingName = p.building?.name || 'N/A';
+            const email = p.lease?.tenant?.email || 'N/A';
+            const status = p.status || 'N/A';
+            const txHash = p.transactionHash || 'N/A';
+            
+            return [
+                p.id,
+                `"${tenantName.replace(/"/g, '""')}"`,
+                `"${email.replace(/"/g, '""')}"`,
+                `"${buildingName.replace(/"/g, '""')}"`,
+                p.amount,
+                p.stablecoin,
+                status,
+                p.dueDate ? new Date(p.dueDate).toLocaleDateString() : 'N/A',
+                p.paidAt ? new Date(p.paidAt).toLocaleDateString() : 'N/A',
+                txHash
+            ];
+        });
 
-        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+        // Add UTF-8 BOM for Excel compatibility
+        const csvContent = "\uFEFF" + [headers, ...rows].map(e => e.join(",")).join("\n");
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", url);
+        link.href = url;
         link.setAttribute("download", `solrent_payments_${new Date().toISOString().split('T')[0]}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
     return (

@@ -13,7 +13,8 @@ export default function Settings() {
     const { user, setUser } = useAuth();
     const [name, setName] = useState(user?.name || "");
     const [email, setEmail] = useState(user?.email || "");
-    const [phone, setPhone] = useState("");
+    const [phone, setPhone] = useState(user?.phone || "");
+    const [walletAddress, setWalletAddress] = useState(user?.walletAddress || "");
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -21,15 +22,26 @@ export default function Settings() {
         setIsSaving(true);
         setSaveMessage(null);
         try {
-            const res = await axios.put("/api/landlord/settings", { name, email, phone: phone || undefined });
+            const res = await axios.put("/api/landlord/settings", { name, email, phone: phone || undefined, walletAddress });
             if (res.data.success) {
                 setUser(res.data.user);
                 setSaveMessage({ type: "success", text: "Settings saved successfully!" });
                 setTimeout(() => setSaveMessage(null), 3000);
             }
-        } catch (error) {
-            setSaveMessage({ type: "error", text: "Failed to save settings. Please try again." });
-            setTimeout(() => setSaveMessage(null), 3000);
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.message || "Failed to save settings.";
+            const validationErrors = error.response?.data?.errors;
+            
+            if (validationErrors) {
+                // Better error extraction for ZodFormattedError
+                const firstField = Object.keys(validationErrors).find(k => k !== "_errors");
+                const errorDetail = firstField ? (validationErrors[firstField] as any)._errors?.[0] : null;
+                
+                setSaveMessage({ type: "error", text: errorDetail || errorMsg });
+            } else {
+                setSaveMessage({ type: "error", text: errorMsg });
+            }
+            setTimeout(() => setSaveMessage(null), 5000);
         } finally {
             setIsSaving(false);
         }
@@ -61,7 +73,7 @@ export default function Settings() {
 
             <div className="grid grid-cols-1 gap-10">
                 <Profile name={name} setName={setName} email={email} setEmail={setEmail} phone={phone} setPhone={setPhone} />
-                <WalletSection />
+                <WalletSection walletAddress={walletAddress} setWalletAddress={setWalletAddress} />
                 <PreferencesSection />
             </div>
         </div>

@@ -5,10 +5,18 @@ import { Switch } from "@repo/ui/components/ui/switch";
 import { Input } from "@repo/ui/components/ui/input";
 import { Wallet } from "lucide-react";
 import { Button } from "@repo/ui/components/ui/button";
-import { useAuth } from "@/store/useAuth";
+import { useWallet } from "@solana/wallet-adapter-react";
 
-export function WalletSection() {
-    const { user } = useAuth();
+export function WalletSection({ walletAddress, setWalletAddress }: { walletAddress: string, setWalletAddress: (v: string) => void }) {
+    const { publicKey } = useWallet();
+
+    const handleSyncWallet = () => {
+        if (publicKey) {
+            setWalletAddress(publicKey.toBase58());
+        } else {
+            alert("Please connect your wallet first via the top bar.");
+        }
+    };
 
     return (
         <section className="space-y-4">
@@ -24,11 +32,18 @@ export function WalletSection() {
                             <label className="text-[10px] font-black uppercase tracking-widest text-text-400">Primary Settlement Address (Solana)</label>
                             <div className="flex gap-3">
                                 <Input
-                                    value={user?.walletAddress || "Not Connected"}
-                                    readOnly
-                                    className="h-12 rounded-xl bg-background-50 border-dashed border-background-200 font-mono text-sm text-primary-900"
+                                    value={walletAddress}
+                                    onChange={(e) => setWalletAddress(e.target.value)}
+                                    placeholder="Enter Solana Wallet Address"
+                                    className="h-12 rounded-xl bg-background-50 border-solid border-background-200 font-mono text-sm text-primary-900"
                                 />
-                                <Button variant="outline" className="h-12 rounded-xl px-6 font-bold border-background-200 text-primary-900">Change Wallet</Button>
+                                <Button 
+                                    variant="outline" 
+                                    onClick={handleSyncWallet}
+                                    className="h-12 rounded-xl px-6 font-bold border-background-200 text-primary-900"
+                                >
+                                    Use Connected Wallet
+                                </Button>
                             </div>
                         </div>
 

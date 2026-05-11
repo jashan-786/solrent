@@ -69,7 +69,10 @@ export const BalanceCard = () => {
                 }
             }
 
-            const response = await axios.post("/api/dev/faucet/usdc", { amount: 5000 });
+            const response = await axios.post("/api/dev/faucet/usdc", { 
+                amount: 5000,
+                walletAddress: publicKey.toBase58() 
+            });
             
             setAirdropMsg({ text: "5,000 Test USDC added to your account!", type: 'success' });
             fetchBalances();

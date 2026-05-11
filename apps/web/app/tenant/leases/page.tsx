@@ -76,15 +76,7 @@ TERMS
             alert("No lease PDF is attached yet.");
             return;
         }
-        axios.get(`/api/leases/${lease.id}/document-url`)
-            .then((res) => {
-                const signedUrl = res?.data?.signedUrl;
-                if (!signedUrl) throw new Error("Missing signed URL");
-                window.open(signedUrl, "_blank");
-            })
-            .catch((error: any) => {
-                alert(error?.response?.data?.message || "Failed to open lease PDF");
-            });
+        window.open(`/api/leases/${lease.id}/document-url`, "_blank");
     };
 
     const handleAcceptLeaseTerms = async () => {

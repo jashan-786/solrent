@@ -207,14 +207,23 @@ export default function LeasesTable({ search, buildingFilter, leaseStatusFilter 
                                 <TableCell>
                                     <div className="flex flex-col gap-1.5">
                                         <div className="flex items-center gap-2">
-                                            <code className="text-[10px] font-mono bg-background-50 px-2 py-1 rounded-lg text-text-400 border border-background-100" title="Tenant Wallet">
-                                                {lease.walletAddress}
+                                            <code className="text-[10px] font-mono bg-background-50 px-2 py-1 rounded-lg text-text-400 border border-background-100" title={lease.onChainAddress ? "Lease Account PDA" : "Tenant Wallet"}>
+                                                {lease.onChainAddress 
+                                                    ? `${lease.onChainAddress.slice(0, 4)}...${lease.onChainAddress.slice(-4)}` 
+                                                    : (lease.walletAddress !== "N/A" 
+                                                        ? `${lease.walletAddress.slice(0, 4)}...${lease.walletAddress.slice(-4)}` 
+                                                        : "N/A")}
                                             </code>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-8 w-8 text-text-300 hover:text-secondary-500"
-                                                onClick={() => window.open(`https://solscan.io/account/${lease.walletAddress}?cluster=devnet`, "_blank")}
+                                                onClick={() => {
+                                                    const addr = lease.onChainAddress || lease.walletAddress;
+                                                    if (addr && addr !== "N/A") {
+                                                        window.open(`https://solscan.io/account/${addr}?cluster=devnet`, "_blank");
+                                                    }
+                                                }}
                                             >
                                                 <ExternalLink className="h-3.5 w-3.5" />
                                             </Button>
@@ -247,20 +256,7 @@ export default function LeasesTable({ search, buildingFilter, leaseStatusFilter 
                                         <DropdownMenuContent align="end" className="w-60 rounded-2xl shadow-xl border-background-100 p-2">
                                             <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-text-400 px-3 py-2">Lease Management</DropdownMenuLabel>
                                             <DropdownMenuItem
-                                                onClick={async () => {
-                                                    if (!lease.leaseDocumentUrl) {
-                                                        alert("No PDF document was attached to this lease.");
-                                                        return;
-                                                    }
-                                                    try {
-                                                        const res = await axios.get(`/api/leases/${lease.id}/document-url`);
-                                                        const signedUrl = res?.data?.signedUrl;
-                                                        if (!signedUrl) throw new Error("Missing signed URL");
-                                                        window.open(signedUrl, "_blank");
-                                                    } catch (e: any) {
-                                                        alert(e?.response?.data?.message || "Failed to open lease agreement.");
-                                                    }
-                                                }}
+                                                onClick={() => window.open(`/api/leases/${lease.id}/document-url`, "_blank")}
                                                 className="gap-3 rounded-xl cursor-pointer py-3 font-bold text-sm"
                                             >
                                                 <FileText className="h-4 w-4 text-primary-900" />

@@ -4,6 +4,14 @@ import { Badge } from "@repo/ui/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/ui/components/ui/table";
 import { CheckCircle2, AlertCircle, Clock, ExternalLink, MoreHorizontal, Loader2 } from "lucide-react";
 import { Button } from "@repo/ui/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@repo/ui/components/ui/dropdown-menu";
 
 const getStatusBadge = (status: string) => {
     switch (status) {
@@ -110,10 +118,51 @@ function PaymentRow({ payment }: { payment: any }) {
                     {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "N/A"}
                 </span>
             </TableCell>
-            <TableCell className="text-right px-6">
-                <Button variant="ghost" size="icon" className="rounded-xl">
-                    <MoreHorizontal className="h-4 w-4 text-slate-400" />
-                </Button>
+            <TableCell className="text-right px-8">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-slate-100 transition-colors">
+                            <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-xl border-slate-100 p-2">
+                        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Transaction Actions</DropdownMenuLabel>
+                        <DropdownMenuItem 
+                            onClick={() => {
+                                if (txHash) window.open(`https://solscan.io/tx/${txHash}?cluster=devnet`, "_blank");
+                            }}
+                            disabled={!txHash}
+                            className="gap-3 rounded-xl cursor-pointer py-3 font-bold text-sm"
+                        >
+                            <ExternalLink className="h-4 w-4 text-sol-indigo" />
+                            View on Explorer
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem 
+                            onClick={() => {
+                                if (txHash) {
+                                    navigator.clipboard.writeText(txHash);
+                                    alert("Transaction hash copied!");
+                                }
+                            }}
+                            disabled={!txHash}
+                            className="gap-3 rounded-xl cursor-pointer py-3 font-bold text-sm"
+                        >
+                            <CheckCircle2 className="h-4 w-4 text-sol-emerald" />
+                            Copy TX ID
+                        </DropdownMenuItem>
+
+                        <DropdownMenuSeparator className="my-2 bg-slate-50" />
+                        
+                        <DropdownMenuItem 
+                            onClick={() => window.location.href = `mailto:${payment.lease?.tenant?.email || ''}`}
+                            className="gap-3 rounded-xl cursor-pointer py-3 font-bold text-sm"
+                        >
+                            <AlertCircle className="h-4 w-4 text-slate-400" />
+                            Contact Tenant
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </TableCell>
         </TableRow>
     );

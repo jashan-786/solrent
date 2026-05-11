@@ -21,7 +21,7 @@ export function PaymentStats({ data, isLoading }: { data: any, isLoading: boolea
                     <CardContent className="p-8 space-y-4">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-400">Total Volume (30d)</p>
                         <div className="space-y-1">
-                            <h2 className="text-4xl  text-white font-black italic tracking-tighter">${data?.totalVolume?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}</h2>
+                            <h2 className="text-4xl  text-white font-black italic tracking-tighter">{data?.totalVolume?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"} <span className="text-xl">USDC</span></h2>
                             <p className="text-xs text-secondary-500 font-bold flex items-center gap-1">
                                 <ArrowUpRight className="h-3 w-3" /> {data?.percentage?.toFixed(1) || 0}% Completion Rate
                             </p>

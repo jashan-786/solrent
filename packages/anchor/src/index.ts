@@ -12,7 +12,8 @@ export function getProgram(provider: AnchorProvider) {
 
 export const METAPLEX_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
-export const USDC_MINT_DEVNET_DEFAULT = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+export const USDC_MINT_DEVNET_DEFAULT = new PublicKey("3mY38dGsJrf5cq1UA3ZK6QpkDcprxaRiDq1GRWu74wXT");
+export const USDC_MINT_DEVNET_REAL = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
 export const USDC_MINT_MAINNET_1 = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 export const USDC_MINT_MAINNET = new PublicKey("971ntPYNK6riaW9bmiatkQnAxSQsJAQubsjDG8LAMeRK");
 

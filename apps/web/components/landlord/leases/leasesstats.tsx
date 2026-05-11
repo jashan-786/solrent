@@ -68,7 +68,7 @@ export default function LeaseStats() {
         },
         {
             label: "Total Rent",
-            value: `$${data?.totalRent?.toFixed(2)}` || "$0.00",
+            value: `${data?.totalRent?.toFixed(2)} USDC` || "0.00 USDC",
             icon: <Wallet size={24} />,
             iconBg: "bg-primary-100",
             iconColor: "text-primary-600",

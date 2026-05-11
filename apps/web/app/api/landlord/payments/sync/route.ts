@@ -44,33 +44,86 @@ export async function POST(req: NextRequest) {
 
 
 
-        const payment = await prisma.payment.create({
-            data: {
+        // Find the current upcoming payment to mark as completed
+        const currentUpcoming = await prisma.payment.findFirst({
+            where: {
                 leaseId,
-                buildingId: lease.buildingId,
-                amount,
-                status: status === "COMPLETED" ? "COMPLETED" : "FAILED",
-                transactionHash: transactionHash || null,
-                nftReceiptMint: nftMint || null,
-                dueDate: new Date(),
-                stablecoin: lease.stablecoin || "USDC",
+                status: "UPCOMING",
             },
+            orderBy: { dueDate: "asc" }
         });
 
-
         if (status === "COMPLETED") {
-            const currentDue = lease.nextDueTimestamp ? Number(lease.nextDueTimestamp) : Math.floor(new Date(lease.startDate).getTime() / 1000);
-            const nextDue = BigInt(currentDue + 2592000);
+            if (currentUpcoming) {
+                // Update the existing milestone
+                await prisma.payment.update({
+                    where: { id: currentUpcoming.id },
+                    data: {
+                        status: "COMPLETED",
+                        transactionHash: transactionHash || null,
+                        nftReceiptMint: nftMint || null,
+                        amount,
+                        paidAt: new Date(),
+                    }
+                });
+            } else {
+                // Fallback: Create if somehow missing
+                await prisma.payment.create({
+                    data: {
+                        leaseId,
+                        buildingId: lease.buildingId,
+                        amount,
+                        status: "COMPLETED",
+                        transactionHash: transactionHash || null,
+                        nftReceiptMint: nftMint || null,
+                        dueDate: new Date(),
+                        paidAt: new Date(),
+                        stablecoin: lease.stablecoin || "USDC",
+                    }
+                });
+            }
 
+            // ADVANCE THE SCHEDULE: Create the NEXT monthly milestone
+            const currentDue = lease.nextDueTimestamp 
+                ? Number(lease.nextDueTimestamp) 
+                : Math.floor(new Date().getTime() / 1000);
             
+            // Advance by 30 days (approx 1 month)
+            const nextDueSecs = currentDue + 2592000;
+            const nextDueDate = new Date(nextDueSecs * 1000);
 
+            await prisma.payment.create({
+                data: {
+                    leaseId,
+                    buildingId: lease.buildingId,
+                    amount: lease.monthlyRent,
+                    status: "UPCOMING",
+                    dueDate: nextDueDate,
+                    stablecoin: lease.stablecoin || "USDC",
+                }
+            });
+
+            // Update lease with next due date
             await prisma.lease.update({
                 where: { id: leaseId },
                 data: {
-                    nextDueTimestamp: nextDue,
-                },
+                    nextDueTimestamp: BigInt(nextDueSecs),
+                }
             });
-
+        } else {
+            // FAILED Payment: Just log the attempt but keep the upcoming one as is
+            await prisma.payment.create({
+                data: {
+                    leaseId,
+                    buildingId: lease.buildingId,
+                    amount,
+                    status: "FAILED",
+                    transactionHash: transactionHash || null,
+                    dueDate: new Date(),
+                    stablecoin: lease.stablecoin || "USDC",
+                    failureReason: error || "Payment failed on-chain"
+                }
+            });
         }
 
         return NextResponse.json({ success: true, message: "Payment synced successfully" });

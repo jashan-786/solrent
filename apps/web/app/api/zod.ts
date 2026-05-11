@@ -8,7 +8,7 @@ export const userSchema = z.object({
     id: z.string().cuid().optional(),
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Invalid email address"),
-    phone: z.string().nullable().optional(),
+    phone: z.string().regex(/^\+?[\d\s-()]{7,20}$/, "Invalid phone number format").nullable().optional(),
     avatarUrl: z.string().url().nullable().optional(),
     walletAddress: z.string().nullable().optional(),
     role: UserRoleEnum.default("TENANT"),
