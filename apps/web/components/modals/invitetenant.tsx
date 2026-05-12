@@ -23,18 +23,24 @@ export default function InviteTenantModal({ isVerified = true }: { isVerified?: 
     const [inviteCode, setInviteCode] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
 
     const handleGenerate = async () => {
         if (!selectedBuilding) return;
         setLoading(true);
+        setApiError(null);
         try {
             const res = await axios.post("/api/landlord/invite-codes", {
                 buildingId: selectedBuilding,
                 unitId: selectedUnit || null
             });
-            setInviteCode(res.data.inviteCode);
-        } catch (e) {
-            
+            if (res.data.success) {
+                setInviteCode(res.data.inviteCode);
+            } else {
+                setApiError(res.data.message || "Failed to generate code");
+            }
+        } catch (err: any) {
+            setApiError(err.response?.data?.message || "An error occurred while generating the invite code.");
         } finally {
             setLoading(false);
         }
@@ -49,7 +55,12 @@ export default function InviteTenantModal({ isVerified = true }: { isVerified?: 
     };
 
     return (
-        <Dialog onOpenChange={(open) => !open && setInviteCode(null)}>
+        <Dialog onOpenChange={(open) => {
+            if (!open) {
+                setInviteCode(null);
+                setApiError(null);
+            }
+        }}>
             <DialogTrigger asChild>
                 <Button className="bg-secondary-500 hover:bg-secondary-600 text-white gap-2 rounded-xl h-11 px-6 shadow-sm">
                     <UserPlus className="h-4 w-4" /> Invite Tenant
@@ -113,6 +124,12 @@ export default function InviteTenantModal({ isVerified = true }: { isVerified?: 
                                         </option>
                                     ))}
                                 </select>
+                            </div>
+                        )}
+
+                        {apiError && (
+                            <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-medium animate-in fade-in slide-in-from-top-1">
+                                {apiError}
                             </div>
                         )}
 
