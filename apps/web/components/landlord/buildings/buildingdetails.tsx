@@ -14,7 +14,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@repo/ui/components/ui/dropdown-menu";
-import { ArrowLeft, MapPin, Users, Wallet, TrendingUp, History, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, MapPin, Users, Wallet, TrendingUp, History, MoreHorizontal, Copy } from "lucide-react";
 
 import { useState } from "react";
 import { useAuth } from "@/store/useAuth";
@@ -50,7 +50,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
         }
 
         const now = Math.floor(Date.now() / 1000);
-        const activeLeases = (building as any).units_list
+        const activeLeases = building.units_list
             ?.flatMap((u: any) => u.leases || [])
             .filter((l: any) => {
                 const dueTime = l.nextDueTimestamp ? Number(l.nextDueTimestamp) : (l.startDate ? Math.floor(new Date(l.startDate).getTime() / 1000) : null);
@@ -198,6 +198,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
             alert("No wallet connected.");
         }
     };
+
     return (
         <div className="min-h-screen bg-surface-primary p-6 lg:p-10">
             <div className="flex items-center gap-4 mb-8">
@@ -260,8 +261,8 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {(building as any).units_list?.length > 0 ? (
-                                            (building as any).units_list.map((unit: any) => (
+                                        {building.units_list && building.units_list.length > 0 ? (
+                                            building.units_list.map((unit: any) => (
                                                 <TableRow key={unit.id} className="border-background-50 hover:bg-background-50/50">
                                                     <TableCell className="font-bold text-primary-900">{unit.unitNumber}</TableCell>
                                                     <TableCell className="text-text-600 font-medium">
@@ -276,10 +277,10 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                             <span className="text-text-400 italic">No tenant</span>
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="text-text-600 font-mono text-[10px] font-black">
+                                                    <TableCell>
                                                         {unit.inviteCodes && unit.inviteCodes.length > 0 ? (
                                                             <div className="flex items-center gap-2">
-                                                                <span className={`px-2 py-1 rounded border font-mono ${unit.inviteCodes[0].isUsed ? 'bg-slate-50 text-slate-400 border-slate-100 line-through' : 'bg-secondary-50 text-secondary-600 border-secondary-100'}`}>
+                                                                <span className={`px-2 py-1 rounded border font-mono text-[10px] font-black ${unit.inviteCodes[0].isUsed ? 'bg-slate-50 text-slate-400 border-slate-100 line-through' : 'bg-secondary-50 text-secondary-600 border-secondary-100'}`}>
                                                                     {unit.inviteCodes[0].code}
                                                                 </span>
                                                                 {!unit.inviteCodes[0].isUsed && (
@@ -288,9 +289,9 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                                             navigator.clipboard.writeText(unit.inviteCodes[0].code);
                                                                             alert("Code copied!");
                                                                         }}
-                                                                        className="text-secondary-400 hover:text-secondary-600"
+                                                                        className="text-secondary-400 hover:text-secondary-600 p-1 hover:bg-secondary-50 rounded"
                                                                     >
-                                                                        <History size={12} />
+                                                                        <Copy size={12} />
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -298,7 +299,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                             <Button 
                                                                 variant="ghost" 
                                                                 size="sm" 
-                                                                className="h-7 text-[10px] text-secondary-500 hover:text-secondary-600 hover:bg-secondary-50 font-bold gap-1"
+                                                                className="h-7 text-[10px] text-secondary-500 hover:text-secondary-600 hover:bg-secondary-50 font-bold"
                                                                 onClick={async () => {
                                                                     try {
                                                                         await axios.post("/api/landlord/invite-codes", {
@@ -356,7 +357,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={5} className="text-center py-8 text-text-400">
+                                                <TableCell colSpan={7} className="text-center py-8 text-text-400">
                                                     No units registered yet.
                                                 </TableCell>
                                             </TableRow>
@@ -372,8 +373,8 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                     <h6 className="text-auth-navy font-bold">Active Tenants</h6>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {(building as any).units_list?.filter((u: any) => u.leases && u.leases.length > 0).length > 0 ? (
-                                        (building as any).units_list.filter((u: any) => u.leases && u.leases.length > 0).map((unit: any) => (
+                                    {building.units_list?.filter((u: any) => u.leases && u.leases.length > 0).length ? (
+                                        building.units_list.filter((u: any) => u.leases && u.leases.length > 0).map((unit: any) => (
                                             <div key={`tenant-${unit.id}`} className="flex items-center gap-4 p-4 rounded-xl border border-background-100 bg-background-50/50">
                                                 <div className="w-12 h-12 rounded-full bg-sol-indigo text-white flex items-center justify-center text-lg font-bold">
                                                     {unit.leases[0].tenant?.name?.charAt(0) || "U"}
@@ -401,8 +402,8 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                         <TabsContent value="invites" className="pt-6">
                             <Card className="p-6 border-none bg-white shadow-sm">
                                 <div className="flex justify-between items-center mb-6">
-                                    <h6 className="text-auth-navy font-bold">Active Invitation Codes</h6>
-                                    <p className="text-[10px] text-text-400 font-bold uppercase tracking-widest">Building-wide & Unit Specific</p>
+                                    <h6 className="text-auth-navy font-bold">Invitation Management</h6>
+                                    <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest text-text-400">Building-wide & Unit Specific</Badge>
                                 </div>
                                 <Table>
                                     <TableHeader>
@@ -420,7 +421,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                     <TableCell className="font-mono font-black text-sol-indigo">{invite.code}</TableCell>
                                                     <TableCell className="text-xs font-bold text-auth-navy">
                                                         {invite.unitId ? (
-                                                            <span>Unit {(building as any).units_list?.find((u: any) => u.id === invite.unitId)?.unitNumber || "Unknown"}</span>
+                                                            <span>Unit {building.units_list?.find((u: any) => u.id === invite.unitId)?.unitNumber || "Unknown"}</span>
                                                         ) : (
                                                             <Badge variant="outline" className="text-[9px] uppercase tracking-tighter">Building Wide</Badge>
                                                         )}
@@ -457,30 +458,30 @@ export default function BuildingDetailsPage({ building }: { building: Building }
 
                         <TabsContent value="overview" className="pt-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Card className="p-6 border-none bg-white">
+                                <Card className="p-6 border-none bg-white shadow-sm">
                                     <h6 className="text-auth-navy font-bold mb-4 flex items-center gap-2">
-                                        <TrendingUp size={16} /> Revenue Performance
+                                        <TrendingUp size={16} className="text-sol-indigo" /> Revenue Performance
                                     </h6>
-                                    <div className="h-48 bg-slate-50 rounded-lg flex items-center justify-center text-text-grey text-xs">
-                                        [Chart: Monthly Yield Trends]
+                                    <div className="h-48 bg-slate-50 rounded-2xl flex items-center justify-center text-text-grey text-xs italic border border-dashed border-slate-200">
+                                        [Monthly Yield Trends Analytics]
                                     </div>
                                 </Card>
-                                <Card className="p-6 border-none bg-white">
+                                <Card className="p-6 border-none bg-white shadow-sm">
                                     <h6 className="text-auth-navy font-bold mb-4 flex items-center gap-2">
-                                        <History size={16} /> Asset Details
+                                        <History size={16} className="text-sol-indigo" /> Asset Details
                                     </h6>
                                     <div className="space-y-4">
-                                        <div className="flex justify-between border-b pb-2">
-                                            <span className="text-sm text-text-grey">Total Units</span>
-                                            <span className="font-bold text-auth-navy">{building.units}</span>
+                                        <div className="flex justify-between border-b border-background-50 pb-3">
+                                            <span className="text-sm text-text-grey font-medium">Total Units</span>
+                                            <span className="font-bold text-auth-navy">{building.units} Units</span>
                                         </div>
-                                        <div className="flex justify-between border-b pb-2">
-                                            <span className="text-sm text-text-grey">Current Occupancy</span>
+                                        <div className="flex justify-between border-b border-background-50 pb-3">
+                                            <span className="text-sm text-text-grey font-medium">Current Occupancy</span>
                                             <span className="font-bold text-sol-emerald">{building.occupied} / {building.units}</span>
                                         </div>
-                                        <div className="flex justify-between border-b pb-2">
-                                            <span className="text-sm text-text-grey">Country</span>
-                                            <span className="font-bold text-auth-navy">{building.country}</span>
+                                        <div className="flex justify-between border-b border-background-50 pb-3">
+                                            <span className="text-sm text-text-grey font-medium">City / Country</span>
+                                            <span className="font-bold text-auth-navy">{building.city}, {building.country}</span>
                                         </div>
                                     </div>
                                 </Card>
@@ -490,20 +491,20 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                 </div>
 
                 <div className="lg:col-span-4 space-y-6">
-                    <Card className="p-6 bg-auth-navy text-white border-none shadow-xl">
-                        <div className="flex justify-between items-start mb-2">
+                    <Card className="p-6 bg-auth-navy text-white border-none shadow-2xl rounded-[32px]">
+                        <div className="flex justify-between items-start mb-6">
                             <div>
-                                <p className="text-tiny font-bold opacity-60 uppercase">Projected Yield</p>
-                                <h2 className="text-2xl text-white">
-                                    {building.monthlyyield ? building.monthlyyield.toLocaleString() : "0"} <span className="text-sm opacity-60 font-bold">USDC</span>
+                                <p className="text-tiny font-bold opacity-60 uppercase tracking-widest">Projected Yield</p>
+                                <h2 className="text-3xl text-white font-black mt-1">
+                                    {building.monthlyyield?.toLocaleString() || "0"} <span className="text-sm opacity-60 font-bold">USDC</span>
                                 </h2>
                             </div>
                             <div className="text-right">
-                                <p className="text-tiny font-bold text-sol-emerald uppercase">Available Now</p>
-                                <h2 className="text-2xl text-sol-emerald">
+                                <p className="text-tiny font-bold text-sol-emerald uppercase tracking-widest">Available Now</p>
+                                <h2 className="text-3xl text-sol-emerald font-black mt-1">
                                     {(() => {
                                         const now = Math.floor(Date.now() / 1000);
-                                        const collectable = (building as any).units_list
+                                        const collectable = building.units_list
                                             ?.flatMap((u: any) => u.leases || [])
                                             .filter((l: any) => {
                                                 const dueTime = l.nextDueTimestamp ? Number(l.nextDueTimestamp) : (l.startDate ? Math.floor(new Date(l.startDate).getTime() / 1000) : null);
@@ -511,59 +512,74 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                 return l.status === "ACTIVE" && l.tenant?.walletAddress && isDue && l.autoPayEnabled === true;
                                             })
                                             .reduce((sum: number, l: any) => sum + (l.monthlyRent || 0), 0);
-                                        return collectable ? collectable.toLocaleString() : "0";
+                                        return collectable?.toLocaleString() || "0";
                                     })()} <span className="text-sm opacity-60 font-bold">USDC</span>
                                 </h2>
                             </div>
                         </div>
 
-                        <div className="space-y-3 mt-6">
+                        <div className="space-y-3">
                             <Button
                                 onClick={handleCollectRent}
                                 disabled={isCollecting}
-                                className="w-full bg-sol-emerald hover:bg-sol-emerald/90 text-white font-bold h-12"
+                                className="w-full bg-sol-emerald hover:bg-sol-emerald/90 text-white font-black h-14 rounded-2xl shadow-lg shadow-sol-emerald/20 transition-all active:scale-[0.98]"
                             >
                                 {isCollecting ? (
-                                    <div className="flex flex-col items-center gap-2">
-                                        <span>Collecting...</span>
-                                        <p className="text-[10px] opacity-70 font-medium">{collectionProgress}</p>
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="text-sm">Collecting Rent...</span>
+                                        <p className="text-[10px] opacity-70 font-medium lowercase tracking-tighter">{collectionProgress}</p>
                                     </div>
                                 ) : (
-                                    "Collect All Rent"
+                                    <div className="flex items-center gap-2">
+                                        <Wallet size={18} />
+                                        Collect All Rent
+                                    </div>
                                 )}
                             </Button>
                             <Button
                                 onClick={handleViewWallet}
                                 variant="outline"
-                                className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white h-12"
+                                className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white h-14 rounded-2xl font-bold transition-all active:scale-[0.98]"
                             >
                                 View Wallet Address
                             </Button>
                         </div>
                     </Card>
 
-                    <Card className="p-6 bg-white border-none shadow-sm">
-                        <h6 className="text-auth-navy font-bold mb-4">Quick Stats</h6>
+                    <Card className="p-6 bg-white border-none shadow-sm rounded-[32px]">
+                        <h6 className="text-auth-navy font-bold mb-6 flex items-center gap-2">
+                             Quick Portfolio Stats
+                        </h6>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-3 bg-surface-secondary rounded-lg text-center">
-                                <Users size={16} className="mx-auto mb-1 text-sol-indigo" />
-                                <p className="text-[10px] text-text-grey uppercase">Occupancy Rate</p>
-                                <p className="font-bold text-auth-navy">
+                            <div className="p-4 bg-background-50/50 rounded-2xl text-center border border-background-100">
+                                <Users size={20} className="mx-auto mb-2 text-sol-indigo" />
+                                <p className="text-[10px] text-text-grey uppercase font-black tracking-widest">Occupancy</p>
+                                <p className="font-black text-xl text-primary-900 mt-1">
                                     {building.units ? Math.round(((building.occupied || 0) / building.units) * 100) : 0}%
                                 </p>
                             </div>
-                            <div className="p-3 bg-surface-secondary rounded-lg text-center">
-                                <Wallet size={16} className="mx-auto mb-1 text-sol-indigo" />
-                                <p className="text-[10px] text-text-grey uppercase">Avg Rent</p>
-                                <p className="font-bold text-auth-navy">
-                                    {building.units ? Math.round((building.monthlyyield || 0) / building.units).toLocaleString() : "0"} USDC
+                            <div className="p-4 bg-background-50/50 rounded-2xl text-center border border-background-100">
+                                <TrendingUp size={20} className="mx-auto mb-2 text-sol-indigo" />
+                                <p className="text-[10px] text-text-grey uppercase font-black tracking-widest">Avg Rent</p>
+                                <p className="font-black text-xl text-primary-900 mt-1">
+                                    {building.units ? Math.round((building.monthlyyield || 0) / building.units).toLocaleString() : "0"}
                                 </p>
                             </div>
                         </div>
                     </Card>
-
                 </div>
             </div>
         </div>
+    );
+}
+
+function StatsCard({ heading, value }: { heading: string, value: string }) {
+    return (
+        <Card className="bg-white border-none shadow-sm rounded-3xl p-6">
+            <div className="space-y-1">
+                <p className="text-text-400 uppercase tracking-widest text-[10px] font-black">{heading}</p>
+                <h3 className="text-3xl font-black text-primary-900 tracking-tight">{value}</h3>
+            </div>
+        </Card>
     );
 }

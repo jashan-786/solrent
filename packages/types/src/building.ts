@@ -11,6 +11,8 @@ export interface Building {
     zip: string;
     country: string;
     occupied: number;
+    units_list?: any[];
+    inviteCodes?: any[];
 }
 export interface CTAEmptyStateProps {
     title: string;
