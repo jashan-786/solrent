@@ -10,7 +10,7 @@ https://solrent-web.vercel.app/
 - **Automated Revenue**: Smart contracts automatically process rent payments in USDC.
 - **Real-time Analytics**: track occupancy rates, revenue trends, and payment health across multiple buildings.
 - **Simplified Leasing**: Create and manage on-chain leases with integrated document storage.
-- **Tenant Management**: Invite tenants, track history, and manage unit assignments effortlessly.
+- **Tenant Management**: Invite tenants, track history, and manage unit assignments easily.
 
 ### For Tenants
 - **Auto-Pay**: Set it and forget it. Authorize smart contracts to handle rent payments automatically.
