@@ -14,6 +14,7 @@ import { mutate } from "swr";
 import { Button } from "@repo/ui/components/ui/button";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -21,7 +22,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@repo/ui/components/ui/dialog";
-import { Activity, Loader2, ShieldCheck, ShieldAlert, Zap, XCircle } from "lucide-react";
+import { Activity, Loader2, ShieldCheck, ShieldAlert, Zap, XCircle, ZapOff } from "lucide-react";
 import {
     getProgram,
     getLeasePDA,
@@ -99,7 +100,7 @@ export function AutoPayModal({ lease, buildingWallet, onSync }: { lease: any, bu
                     systemProgram: SystemProgram.programId, tokenProgram: TOKEN_PROGRAM_ID,
                 } as any)
                 .instruction());
-            
+
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
             tx.recentBlockhash = blockhash;
             tx.feePayer = publicKey;
@@ -117,7 +118,7 @@ export function AutoPayModal({ lease, buildingWallet, onSync }: { lease: any, bu
             });
 
             if (onSync) onSync();
-            
+
             setTimeout(() => {
                 setLocalAutoPay(null);
                 setOpen(false);
@@ -136,109 +137,91 @@ export function AutoPayModal({ lease, buildingWallet, onSync }: { lease: any, bu
     return (
         <Dialog open={open} onOpenChange={(val) => !loading && setOpen(val)}>
             <DialogTrigger asChild>
-                <button className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                    isAutoPayEnabled 
-                        ? "bg-secondary-50 text-secondary-600 border border-secondary-100" 
-                        : "bg-sol-indigo text-white shadow-lg shadow-sol-indigo/20"
-                }`}>
+                <button className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${isAutoPayEnabled
+                    ? "bg-secondary-50 text-secondary-600 border border-secondary-100"
+                    : "bg-sol-indigo text-white shadow-lg shadow-sol-indigo/20 hover:scale-[1.02] active:scale-[0.98]"
+                    }`}>
                     {isAutoPayEnabled ? <ShieldCheck size={16} /> : <Zap size={16} />}
                     {isAutoPayEnabled ? "Auto-Pay: ON" : "Enable Auto-Pay"}
                 </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-white rounded-3xl p-6 border-none shadow-2xl overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1.5 bg-background-100">
-                    {loading && <div className="h-full bg-sol-emerald animate-shimmer" style={{ width: '40%' }} />}
-                </div>
+            <DialogContent className="sm:max-w-md bg-background-50 border-none rounded-3xl p-6 overflow-hidden">
+                <div className="relative z-10">
+                    <DialogHeader className="mb-6">
+                        <div className="w-12 h-12 rounded-2xl bg-sol-indigo/10 flex items-center justify-center mb-4">
+                            <Activity className="text-sol-indigo" size={24} />
+                        </div>
+                        <DialogTitle className="text-2xl font-black text-text-900 tracking-tight">
+                            {isAutoPayEnabled ? "Disable Auto-Pay" : "Enable Auto-Pay"}
+                        </DialogTitle>
+                        <DialogDescription className="text-text-500 font-medium">
+                            {isAutoPayEnabled
+                                ? "By turning this off, you will need to manually pay your rent each month."
+                                : "Allow the smart contract to automatically collect rent from your wallet on the due date."}
+                        </DialogDescription>
+                    </DialogHeader>
 
-                <DialogHeader className="mb-4">
-                    <DialogTitle className="text-xl font-bold text-auth-navy flex items-center gap-2">
-                        {isAutoPayEnabled ? (
-                            <><ShieldAlert className="text-secondary-500" /> Manage Auto-Pay</>
-                        ) : (
-                            <><ShieldCheck className="text-sol-emerald" /> Activate Auto-Pay</>
-                        )}
-                    </DialogTitle>
-                    <DialogDescription className="text-text-500 text-sm mt-2 leading-relaxed">
-                        {isAutoPayEnabled
-                            ? "Auto-pay is currently active. Your rent will be collected automatically on each due date using your approved smart contract delegate."
-                            : "Enable smart contract delegation to automate your rent payments. Funds will only be moved on the exact billing date defined in your lease."
-                        }
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-4 mb-6">
-                    <div className="bg-background-50 p-4 rounded-2xl border border-background-100 space-y-3">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-text-400 font-semibold uppercase tracking-wider text-[10px]">Current Status</span>
-                            <div className="flex items-center gap-1.5">
-                                <div className={`h-2 w-2 rounded-full ${isAutoPayEnabled ? "bg-sol-emerald animate-pulse" : "bg-text-300"}`} />
-                                <span className={`font-black tracking-tight ${isAutoPayEnabled ? "text-sol-emerald" : "text-text-400"}`}>
-                                    {isAutoPayEnabled ? "ACTIVE" : "DISABLED"}
-                                </span>
+                    <div className="space-y-4 mb-8">
+                        <div className={`p-4 rounded-2xl border transition-colors ${isAutoPayEnabled ? "bg-secondary-50/50 border-secondary-100" : "bg-background-100 border-background-200"
+                            }`}>
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-bold text-text-500 uppercase tracking-wider">Current Status</span>
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full ${isAutoPayEnabled ? "bg-secondary-500 animate-pulse" : "bg-text-300"}`} />
+                                    <span className={`text-sm font-black ${isAutoPayEnabled ? "text-secondary-600" : "text-text-600"}`}>
+                                        {isAutoPayEnabled ? "ACTIVE" : "INACTIVE"}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-text-400 font-semibold uppercase tracking-wider text-[10px]">Verification</span>
-                            <span className="text-auth-navy font-bold flex items-center gap-1">
-                                <Zap size={12} className="text-secondary-500" />
-                                Smart Contract
-                            </span>
-                        </div>
+
+                        {txStatus !== "idle" && (
+                            <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="flex justify-between items-end mb-1">
+                                    <span className="text-[10px] font-black text-sol-indigo uppercase tracking-[0.2em]">
+                                        {txStatus === "signing" ? "Step 1: Secure Signing" :
+                                            txStatus === "confirming" ? "Step 2: On-Chain Finalization" : "Step 3: Database Sync"}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-text-400">
+                                        {txStatus === "signing" ? "33%" : txStatus === "confirming" ? "66%" : "99%"}
+                                    </span>
+                                </div>
+                                <div className="h-1.5 w-full bg-sol-indigo/10 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-sol-indigo transition-all duration-1000 ease-out"
+                                        style={{ width: txStatus === "signing" ? "33%" : txStatus === "confirming" ? "66%" : "100%" }}
+                                    />
+                                </div>
+                                <p className="text-xs font-medium text-text-500 italic">
+                                    {txStatus === "signing" ? "Please approve the transaction in your wallet..." :
+                                        txStatus === "confirming" ? "Waiting for Solana network confirmation..." : "Updating your dashboard state..."}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
-                    {txStatus !== "idle" && (
-                        <div className="flex items-center gap-3 p-3 bg-sol-indigo/5 rounded-xl border border-sol-indigo/10 animate-in fade-in slide-in-from-bottom-2">
-                            <Loader2 className="h-4 w-4 text-sol-indigo animate-spin" />
-                            <span className="text-xs font-bold text-sol-indigo uppercase tracking-wider">
-                                {txStatus === "signing" && "Waiting for Signature..."}
-                                {txStatus === "confirming" && "Finalizing on Chain..."}
-                                {txStatus === "syncing" && "Updating Backend..."}
-                            </span>
-                        </div>
-                    )}
+                    <div className="flex gap-3">
+                        <DialogClose asChild>
+                            <button disabled={loading} className="flex-1 px-4 py-4 bg-background-100 text-text-600 rounded-2xl font-bold hover:bg-background-200 transition-all active:scale-95 disabled:opacity-50">
+                                Cancel
+                            </button>
+                        </DialogClose>
+                        <button
+                            onClick={toggleAutoPay}
+                            disabled={loading || (connection.rpcEndpoint.includes("devnet") && lease?.stablecoin !== "USDC")}
+                            className={`flex-[2] px-4 py-4 rounded-2xl font-black flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 ${isAutoPayEnabled
+                                ? "bg-red-50 text-red-600 hover:bg-red-100"
+                                : "bg-sol-indigo text-white shadow-2xl shadow-sol-indigo/30"
+                                }`}
+                        >
+                            {loading ? <Loader2 size={20} className="animate-spin" /> : (isAutoPayEnabled ? <ZapOff size={20} /> : <Zap size={20} />)}
+                            <span className="tracking-tight">{isAutoPayEnabled ? "Turn OFF" : "Turn ON"}</span>
+                        </button>
+                    </div>
                 </div>
-
-                <DialogFooter className="flex flex-col sm:flex-row gap-3">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setOpen(false)}
-                        disabled={loading}
-                        className="flex-1 rounded-xl text-text-500 hover:text-auth-navy font-bold h-12"
-                    >
-                        Close
-                    </Button>
-                    <Button
-                        onClick={toggleAutoPay}
-                        disabled={loading || !lease?.onChainId}
-                        className={`flex-[2] h-12 rounded-xl font-black text-white shadow-lg transition-all active:scale-[0.98] ${
-                            isAutoPayEnabled
-                            ? "bg-secondary-500 hover:bg-secondary-600 shadow-secondary-500/20"
-                            : "bg-sol-emerald hover:bg-sol-emerald/90 shadow-sol-emerald/20"
-                        }`}
-                    >
-                        {loading ? (
-                            <div className="flex items-center gap-2">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>Processing...</span>
-                            </div>
-                        ) : (
-                            isAutoPayEnabled ? (
-                                <div className="flex items-center gap-2">
-                                    <XCircle size={18} />
-                                    <span>Turn OFF Auto-Pay</span>
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <Zap size={18} />
-                                    <span>Turn ON Auto-Pay</span>
-                                </div>
-                            )
-                        )}
-                    </Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 }
+
 
