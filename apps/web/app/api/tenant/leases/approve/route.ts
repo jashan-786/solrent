@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
             lease: {
                 ...updated,
                 onChainId: updated.onChainId?.toString() || null,
+                nextDueTimestamp: updated.nextDueTimestamp?.toString() || null,
             },
         });
     } catch (error) {
