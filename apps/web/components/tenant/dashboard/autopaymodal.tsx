@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, useMemo } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import {
     PublicKey,
@@ -22,7 +21,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@repo/ui/components/ui/dialog";
-import { Activity, Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Activity, Loader2, ShieldCheck, ShieldAlert, Zap, XCircle } from "lucide-react";
 import {
     getProgram,
     getLeasePDA,
@@ -37,6 +36,7 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
     const [open, setOpen] = useState(false);
     const [onChainAutoPay, setOnChainAutoPay] = useState<boolean | null>(null);
     const [localAutoPay, setLocalAutoPay] = useState<boolean | null>(null);
+    const [txStatus, setTxStatus] = useState<"idle" | "signing" | "confirming" | "syncing">("idle");
 
     const checkOnChainStatus = async () => {
         if (!publicKey || !lease) return;
@@ -45,7 +45,7 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
             const onChainIdStr = lease.onChainId;
 
             if (!onChainIdStr || isNaN(Number(onChainIdStr))) {
-                console.log("[AutoPayModal] Skipping on-chain check: No valid on-chain ID found", { onChainIdStr });
+                console.log("[AutoPayModal] No valid on-chain ID", { onChainIdStr });
                 setOnChainAutoPay(null);
                 return;
             }
@@ -56,61 +56,40 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
 
             const info = await connection.getAccountInfo(delegatePDA);
             const isEnabled = !!info;
-
-            console.log("[AutoPayModal] On-chain check result:", { isEnabled, onChainIdStr });
             setOnChainAutoPay(isEnabled);
-
-        } catch (err: any) {
+        } catch (err) {
             console.error("[AutoPayModal] On-chain check failed:", err);
             setOnChainAutoPay(null);
         }
     };
 
-    // Compute final auto-pay state: enabled if either DB, On-Chain, or Local says so.
-    const isAutoPayEnabled = Boolean(
-        localAutoPay === true || 
-        (localAutoPay === null && (lease?.autoPayEnabled === true || onChainAutoPay === true))
-    );
+    // Primary state logic: Favor local override, then DB/On-Chain truth
+    const isAutoPayEnabled = useMemo(() => {
+        if (localAutoPay !== null) return localAutoPay;
+        return !!(lease?.autoPayEnabled || onChainAutoPay);
+    }, [localAutoPay, lease?.autoPayEnabled, onChainAutoPay]);
+
     const isMainnet = connection.rpcEndpoint?.toLowerCase().includes("mainnet");
     const isDevnetStablecoinAllowed = isMainnet || lease?.stablecoin === "USDC";
 
     useEffect(() => {
-        console.log("[AutoPayModal] State:", { 
-            id: lease?.id, 
-            dbAutoPay: lease?.autoPayEnabled, 
-            onChainAutoPay,
-            localAutoPay,
-            isAutoPayEnabled 
-        });
-    }, [lease?.id, lease?.autoPayEnabled, onChainAutoPay, localAutoPay, isAutoPayEnabled]);
-
-    useEffect(() => {
-        if (open || publicKey) {
+        if (open || (publicKey && onChainAutoPay === null)) {
             checkOnChainStatus();
         }
     }, [open, publicKey, lease?.id, lease?.onChainId]);
 
     const toggleAutoPay = async () => {
         if (!publicKey || !wallet?.adapter || !lease) return;
-        if (!isDevnetStablecoinAllowed) {
-            alert("Auto-pay for this stablecoin is only supported on mainnet. On devnet, please use USDC.");
-            return;
-        }
+        if (!isDevnetStablecoinAllowed) return;
 
         setLoading(true);
+        setTxStatus("signing");
 
         try {
             const provider = new AnchorProvider(connection, wallet.adapter as any, { commitment: "confirmed" });
             const program = getProgram(provider) as any;
-
             const landlordPubkey = new PublicKey(buildingWallet);
-            const onChainIdStr = lease.onChainId;
-
-            if (!onChainIdStr || isNaN(Number(onChainIdStr))) {
-                throw new Error("This lease does not have a valid on-chain ID. Please contact support.");
-            }
-
-            const unitId = BigInt(onChainIdStr);
+            const unitId = BigInt(lease.onChainId);
 
             const [leasePDA] = getLeasePDA(landlordPubkey, publicKey, unitId);
             const [delegatePDA] = getDelegatePDA(leasePDA, unitId);
@@ -118,23 +97,14 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
             const STABLECOIN_MINT = getStablecoinMint(lease.stablecoin, { rpcEndpoint: connection.rpcEndpoint });
             const tenantAta = await getAssociatedTokenAddress(STABLECOIN_MINT, publicKey);
 
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
             const tx = new Transaction();
-
             const tenantAtaInfo = await connection.getAccountInfo(tenantAta);
             if (!tenantAtaInfo) {
-                tx.add(
-                    createAssociatedTokenAccountInstruction(
-                        publicKey,
-                        tenantAta,
-                        publicKey,
-                        STABLECOIN_MINT
-                    )
-                );
+                tx.add(createAssociatedTokenAccountInstruction(publicKey, tenantAta, publicKey, STABLECOIN_MINT));
             }
 
-            const newStatus = !isAutoPayEnabled;
-            const approveAmount = newStatus ? new BN("1000000000000000000") : new BN(0);
+            const nextStatus = !isAutoPayEnabled;
+            const approveAmount = nextStatus ? new BN("1000000000000000000") : new BN(0);
 
             const approveIx = await program.methods
                 .approveDelegate(new BN(unitId.toString()), approveAmount)
@@ -151,125 +121,148 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
                 .instruction();
 
             tx.add(approveIx);
+            
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
             tx.recentBlockhash = blockhash;
             tx.feePayer = publicKey;
 
-            let signature;
-            try {
-
-                signature = await sendTransaction(tx, connection, { skipPreflight: true })
-                    .catch((e: any) => {
-                        const isCancellation = e.message?.toLowerCase().includes("user rejected") ||
-                            e.name === "WalletSendTransactionError" ||
-                            e.code === 4001 ||
-                            e.toString().toLowerCase().includes("rejected");
-
-                        if (isCancellation) {
-
-                            return "__CANCELLED__";
-                        }
-                        throw e;
-                    });
-
-                if (signature === "__CANCELLED__") {
-                    setLoading(false);
-                    return;
-                }
-            } catch (e: any) {
-                setLoading(false);
-                alert("Failed to update Auto-Pay: " + (e.message || e.toString()));
-                return;
-            }
-
+            const signature = await sendTransaction(tx, connection);
+            setTxStatus("confirming");
             await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
 
-            // Optimistic update
-            setLocalAutoPay(newStatus);
+            setLocalAutoPay(nextStatus);
+            setTxStatus("syncing");
 
             await axios.post(`/api/tenant/leases/approve-delegate`, {
                 leaseId: lease.id,
                 transactionHash: signature,
-                enabled: newStatus
+                enabled: nextStatus
             });
 
-            // Wait 2 seconds for RPC to index before re-checking
             setTimeout(async () => {
                 await checkOnChainStatus();
-                setLocalAutoPay(null); // Clear local override once synced
+                setLocalAutoPay(null);
                 mutate("/api/tenant/dashboard");
-            }, 2000);
+                setOpen(false);
+                setTxStatus("idle");
+            }, 1500);
 
-            setOpen(false);
         } catch (err: any) {
-            alert("An error occurred: " + (err.response?.data?.message || err.message));
+            console.error(err);
+            if (!err.message?.includes("rejected")) {
+                alert("Failed to update Auto-Pay: " + (err.response?.data?.message || err.message));
+            }
+            setTxStatus("idle");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(val) => !loading && setOpen(val)}>
             <DialogTrigger asChild>
                 <Button
                     variant={isAutoPayEnabled ? "outline" : "default"}
-                    className={`flex items-center gap-2 px-6 h-12 rounded-2xl font-bold transition-all ${isAutoPayEnabled
+                    className={`flex items-center gap-2 px-6 h-12 rounded-2xl font-bold transition-all ${
+                        isAutoPayEnabled
                         ? "border-sol-emerald/30 text-sol-emerald bg-sol-emerald/5 hover:bg-sol-emerald/10 shadow-sm"
                         : "bg-sol-indigo hover:bg-sol-indigo/90 text-white shadow-md shadow-sol-indigo/20"
-                        }`}
+                    }`}
                     disabled={!isDevnetStablecoinAllowed}
                 >
                     <Activity size={18} className={isAutoPayEnabled ? "animate-pulse" : ""} />
-                    {isAutoPayEnabled ? "Turn OFF Auto-Pay" : "Enable Auto-Pay"}
+                    {isAutoPayEnabled ? "Auto-Pay: ON" : "Enable Auto-Pay"}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-white rounded-3xl p-6 border-none shadow-2xl">
+            <DialogContent className="sm:max-w-[425px] bg-white rounded-3xl p-6 border-none shadow-2xl overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-background-100">
+                    {loading && <div className="h-full bg-sol-emerald animate-shimmer" style={{ width: '40%' }} />}
+                </div>
+
                 <DialogHeader className="mb-4">
                     <DialogTitle className="text-xl font-bold text-auth-navy flex items-center gap-2">
                         {isAutoPayEnabled ? (
-                            <><ShieldAlert className="text-secondary-500" /> Disable Auto-Pay</>
+                            <><ShieldAlert className="text-secondary-500" /> Manage Auto-Pay</>
                         ) : (
-                            <><ShieldCheck className="text-sol-emerald" /> Enable Auto-Pay</>
+                            <><ShieldCheck className="text-sol-emerald" /> Activate Auto-Pay</>
                         )}
                     </DialogTitle>
-                    <DialogDescription className="text-text-500 text-sm mt-2">
+                    <DialogDescription className="text-text-500 text-sm mt-2 leading-relaxed">
                         {isAutoPayEnabled
-                            ? "By turning this off, you will need to manually pay your rent each month. Your landlord will no longer be able to automatically collect the funds."
-                            : "By turning this on, you authorize the smart contract to automatically pay your rent on the due date. This saves you time and ensures you never miss a payment."
+                            ? "Auto-pay is currently active. Your rent will be collected automatically on each due date using your approved smart contract delegate."
+                            : "Enable smart contract delegation to automate your rent payments. Funds will only be moved on the exact billing date defined in your lease."
                         }
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="bg-background-50 p-4 rounded-xl border border-background-100 flex flex-col gap-2 mb-6">
-                    <div className="flex justify-between items-center text-sm">
-                        <span className="text-text-500 font-medium">Current Status</span>
-                        <span className={`font-bold ${isAutoPayEnabled ? "text-sol-emerald" : "text-text-400"}`}>
-                            {isAutoPayEnabled ? "ON" : "OFF"}
-                        </span>
+                <div className="space-y-4 mb-6">
+                    <div className="bg-background-50 p-4 rounded-2xl border border-background-100 space-y-3">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-text-400 font-semibold uppercase tracking-wider text-[10px]">Current Status</span>
+                            <div className="flex items-center gap-1.5">
+                                <div className={`h-2 w-2 rounded-full ${isAutoPayEnabled ? "bg-sol-emerald animate-pulse" : "bg-text-300"}`} />
+                                <span className={`font-black tracking-tight ${isAutoPayEnabled ? "text-sol-emerald" : "text-text-400"}`}>
+                                    {isAutoPayEnabled ? "ACTIVE" : "DISABLED"}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-text-400 font-semibold uppercase tracking-wider text-[10px]">Verification</span>
+                            <span className="text-auth-navy font-bold flex items-center gap-1">
+                                <Zap size={12} className="text-secondary-500" />
+                                Smart Contract
+                            </span>
+                        </div>
                     </div>
+
+                    {txStatus !== "idle" && (
+                        <div className="flex items-center gap-3 p-3 bg-sol-indigo/5 rounded-xl border border-sol-indigo/10 animate-in fade-in slide-in-from-bottom-2">
+                            <Loader2 className="h-4 w-4 text-sol-indigo animate-spin" />
+                            <span className="text-xs font-bold text-sol-indigo uppercase tracking-wider">
+                                {txStatus === "signing" && "Waiting for Signature..."}
+                                {txStatus === "confirming" && "Finalizing on Chain..."}
+                                {txStatus === "syncing" && "Updating Backend..."}
+                            </span>
+                        </div>
+                    )}
                 </div>
 
-                <DialogFooter className="gap-2 sm:gap-0">
+                <DialogFooter className="flex flex-col sm:flex-row gap-3">
                     <Button
                         type="button"
                         variant="ghost"
                         onClick={() => setOpen(false)}
                         disabled={loading}
-                        className="rounded-xl text-text-500 hover:text-auth-navy font-bold"
+                        className="flex-1 rounded-xl text-text-500 hover:text-auth-navy font-bold h-12"
                     >
-                        Cancel
+                        Close
                     </Button>
                     <Button
                         onClick={toggleAutoPay}
-                        disabled={loading || !lease}
-                        className={`rounded-xl font-bold text-white shadow-md ${isAutoPayEnabled
+                        disabled={loading || !lease?.onChainId}
+                        className={`flex-[2] h-12 rounded-xl font-black text-white shadow-lg transition-all active:scale-[0.98] ${
+                            isAutoPayEnabled
                             ? "bg-secondary-500 hover:bg-secondary-600 shadow-secondary-500/20"
                             : "bg-sol-emerald hover:bg-sol-emerald/90 shadow-sol-emerald/20"
-                            }`}
+                        }`}
                     >
                         {loading ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Processing...</span>
+                            </div>
                         ) : (
-                            isAutoPayEnabled ? "Turn OFF Auto-Pay" : "Turn ON Auto-Pay"
+                            isAutoPayEnabled ? (
+                                <div className="flex items-center gap-2">
+                                    <XCircle size={18} />
+                                    <span>Turn OFF Auto-Pay</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <Zap size={18} />
+                                    <span>Turn ON Auto-Pay</span>
+                                </div>
+                            )
                         )}
                     </Button>
                 </DialogFooter>
@@ -277,3 +270,4 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
         </Dialog>
     );
 }
+
