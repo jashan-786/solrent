@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
             where: {
                 id: leaseId,
                 tenantId: session.id,
-                status: "ACTIVE",
+                status: { in: ["ACTIVE", "PENDING"] },
             },
         });
 

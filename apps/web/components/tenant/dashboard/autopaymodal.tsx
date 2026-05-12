@@ -169,9 +169,8 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
 
             mutate("/api/tenant/dashboard");
             setOpen(false);
-
         } catch (err: any) {
-
+            alert("An error occurred: " + (err.response?.data?.message || err.message));
         } finally {
             setLoading(false);
         }
