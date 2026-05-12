@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import axios from "axios";
 import TenantDashboardTopbar from "@/components/tenant/dashboard/topbar";
 import TenantIntro from "@/components/tenant/dashboard/tenantintro";
@@ -59,7 +59,11 @@ export default function TenantDashboardPage() {
                     />
                 )}
             </div>
-            <BriefInfo lease={activeLease} nextPayment={dashboard?.nextPayment} />
+            <BriefInfo 
+                lease={activeLease} 
+                nextPayment={dashboard?.nextPayment} 
+                mutateDashboard={() => mutate("/api/tenant/dashboard")}
+            />
             <div className="flex flex-col md:flex-row gap-4 w-full h-full items-center">
                 <div className="w-full md:w-2/3 h-full">
                     <PropertyHeader 

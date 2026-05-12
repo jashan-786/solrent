@@ -29,7 +29,7 @@ import {
     getStablecoinMint
 } from "@repo/anchor";
 
-export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWallet: string }) {
+export function AutoPayModal({ lease, buildingWallet, onSync }: { lease: any, buildingWallet: string, onSync?: () => void }) {
     const { publicKey, sendTransaction, wallet } = useWallet();
     const { connection } = useConnection();
     const [loading, setLoading] = useState(false);
@@ -139,10 +139,13 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
                 enabled: nextStatus
             });
 
+            // Call onSync immediately to refresh parent data
+            if (onSync) onSync();
+
             setTimeout(async () => {
                 await checkOnChainStatus();
                 setLocalAutoPay(null);
-                mutate("/api/tenant/dashboard");
+                if (onSync) onSync();
                 setOpen(false);
                 setTxStatus("idle");
             }, 1500);

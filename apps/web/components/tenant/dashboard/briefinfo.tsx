@@ -3,7 +3,7 @@ import { CircleCheckBig, Clock, ShieldCheck, Activity } from "lucide-react";
 
 import { AutoPayModal } from "./autopaymodal";
 
-export default function BriefInfo({ lease, nextPayment }: { lease: any, nextPayment?: any }) {
+export default function BriefInfo({ lease, nextPayment, mutateDashboard }: { lease: any, nextPayment?: any, mutateDashboard?: () => void }) {
     
     const getDaysUntilDue = () => {
         if (!nextPayment?.dueDate) return "--";
@@ -45,7 +45,7 @@ export default function BriefInfo({ lease, nextPayment }: { lease: any, nextPaym
             value: lease?.autoPayEnabled ? "On" : "Off",
             description: lease?.autoPayEnabled ? "Smart Contract Active" : "Manual Payment",
             icon: <Activity size={16} className={lease?.autoPayEnabled ? "text-secondary-500" : "text-text-400"} />,
-            action: lease && lease.landlordWallet ? <div className="mt-4"><AutoPayModal lease={lease} buildingWallet={lease.landlordWallet} /></div> : null
+            action: lease && lease.landlordWallet ? <div className="mt-4"><AutoPayModal lease={lease} buildingWallet={lease.landlordWallet} onSync={mutateDashboard} /></div> : null
         }
     ];
 
