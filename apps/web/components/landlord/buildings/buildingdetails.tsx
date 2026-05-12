@@ -238,6 +238,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                             <TabsTrigger value="overview" className="data-[state=active]:border-b-2 data-[state=active]:border-sol-indigo rounded-none bg-transparent px-0 font-bold">Overview</TabsTrigger>
                             <TabsTrigger value="units" className="data-[state=active]:border-b-2 data-[state=active]:border-sol-indigo rounded-none bg-transparent px-0 font-bold">Units</TabsTrigger>
                             <TabsTrigger value="tenants" className="data-[state=active]:border-b-2 data-[state=active]:border-sol-indigo rounded-none bg-transparent px-0 font-bold">Tenants</TabsTrigger>
+                            <TabsTrigger value="invites" className="data-[state=active]:border-b-2 data-[state=active]:border-sol-indigo rounded-none bg-transparent px-0 font-bold">Invites</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="units" className="pt-6">
@@ -278,18 +279,40 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                     <TableCell className="text-text-600 font-mono text-[10px] font-black">
                                                         {unit.inviteCodes && unit.inviteCodes.length > 0 ? (
                                                             <div className="flex items-center gap-2">
-                                                                <span className="bg-secondary-50 px-2 py-1 rounded border border-secondary-100 text-secondary-600">
+                                                                <span className={`px-2 py-1 rounded border font-mono ${unit.inviteCodes[0].isUsed ? 'bg-slate-50 text-slate-400 border-slate-100 line-through' : 'bg-secondary-50 text-secondary-600 border-secondary-100'}`}>
                                                                     {unit.inviteCodes[0].code}
                                                                 </span>
-                                                                <button
-                                                                    onClick={() => navigator.clipboard.writeText(unit.inviteCodes[0].code)}
-                                                                    className="text-secondary-400 hover:text-secondary-600"
-                                                                >
-                                                                    <History size={12} />
-                                                                </button>
+                                                                {!unit.inviteCodes[0].isUsed && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(unit.inviteCodes[0].code);
+                                                                            alert("Code copied!");
+                                                                        }}
+                                                                        className="text-secondary-400 hover:text-secondary-600"
+                                                                    >
+                                                                        <History size={12} />
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         ) : (
-                                                            <span className="text-text-300 italic">—</span>
+                                                            <Button 
+                                                                variant="ghost" 
+                                                                size="sm" 
+                                                                className="h-7 text-[10px] text-secondary-500 hover:text-secondary-600 hover:bg-secondary-50 font-bold gap-1"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        await axios.post("/api/landlord/invite-codes", {
+                                                                            buildingId: building.id,
+                                                                            unitId: unit.id
+                                                                        });
+                                                                        mutate(`/api/landlord/building/${building.id}`);
+                                                                    } catch (err) {
+                                                                        alert("Failed to generate code");
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Generate Code
+                                                            </Button>
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-text-600 font-medium">{unit.rentAmount} USDC</TableCell>
@@ -372,6 +395,63 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                         </div>
                                     )}
                                 </div>
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="invites" className="pt-6">
+                            <Card className="p-6 border-none bg-white shadow-sm">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h6 className="text-auth-navy font-bold">Active Invitation Codes</h6>
+                                    <p className="text-[10px] text-text-400 font-bold uppercase tracking-widest">Building-wide & Unit Specific</p>
+                                </div>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="hover:bg-transparent border-background-100">
+                                            <TableHead className="text-tiny font-bold uppercase text-text-400">Code</TableHead>
+                                            <TableHead className="text-tiny font-bold uppercase text-text-400">Assignment</TableHead>
+                                            <TableHead className="text-tiny font-bold uppercase text-text-400">Created</TableHead>
+                                            <TableHead className="text-tiny font-bold uppercase text-text-400 text-right">Action</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {building.inviteCodes && building.inviteCodes.length > 0 ? (
+                                            building.inviteCodes.map((invite: any) => (
+                                                <TableRow key={invite.id} className="border-background-50">
+                                                    <TableCell className="font-mono font-black text-sol-indigo">{invite.code}</TableCell>
+                                                    <TableCell className="text-xs font-bold text-auth-navy">
+                                                        {invite.unitId ? (
+                                                            <span>Unit {(building as any).units_list?.find((u: any) => u.id === invite.unitId)?.unitNumber || "Unknown"}</span>
+                                                        ) : (
+                                                            <Badge variant="outline" className="text-[9px] uppercase tracking-tighter">Building Wide</Badge>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-xs text-text-400">
+                                                        {new Date(invite.createdAt).toLocaleDateString()}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="sm" 
+                                                            className="h-8 font-bold text-sol-indigo hover:bg-sol-indigo/5"
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(invite.code);
+                                                                alert("Code copied!");
+                                                            }}
+                                                        >
+                                                            Copy
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={4} className="text-center py-10 text-text-300 italic">
+                                                    No active invitation codes found.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
                             </Card>
                         </TabsContent>
 
