@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
             },
             include: {
                 leases: {
-                    where: { status: "ACTIVE" },
+                    where: { status: { in: ["ACTIVE", "PENDING"] } },
                     include: { tenant: true }
                 }
             }

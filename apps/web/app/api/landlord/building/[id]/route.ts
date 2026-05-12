@@ -30,7 +30,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                         bedrooms: true,
                         bathrooms: true,
                         leases: {
-                            where: { status: LeaseStatus.ACTIVE },
+                            where: { status: { in: [LeaseStatus.ACTIVE, LeaseStatus.PENDING] } },
                             include: {
                                 tenant: {
                                     select: { name: true, email: true, avatarUrl: true, walletAddress: true }

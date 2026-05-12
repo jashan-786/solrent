@@ -277,9 +277,15 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                     <TableCell className="text-text-600 font-medium">{unit.rentAmount} USDC</TableCell>
                                                     <TableCell className="text-text-500 text-xs">{unit.bedrooms}B / {unit.bathrooms}B</TableCell>
                                                     <TableCell>
-                                                        <Badge className={unit.occupied ? "bg-sol-emerald/10 text-sol-emerald" : "bg-secondary-500/10 text-secondary-500"}>
-                                                            {unit.occupied ? "Occupied" : "Vacant"}
-                                                        </Badge>
+                                                        {unit.leases && unit.leases.length > 0 ? (
+                                                            unit.leases[0].status === "ACTIVE" ? (
+                                                                <Badge className="bg-sol-emerald/10 text-sol-emerald">Occupied</Badge>
+                                                            ) : (
+                                                                <Badge className="bg-amber-500/10 text-amber-600">Pending Acceptance</Badge>
+                                                            )
+                                                        ) : (
+                                                            <Badge className="bg-secondary-500/10 text-secondary-500">Vacant</Badge>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-right pr-6">
                                                         <DropdownMenu>

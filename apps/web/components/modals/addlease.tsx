@@ -80,7 +80,7 @@ export default function AddLeaseModal({ isVerified = true }: { isVerified?: bool
     const { data: tenantsData } = useSWR("/api/landlord/tenants", fetcher);
 
     const buildings = buildingsData?.buildings || [];
-    const units = (unitsData?.units || []).filter((u: any) => !u.occupied);
+    const units = (unitsData?.units || []);
 
     const form = useForm({
         defaultValues: {
@@ -349,11 +349,16 @@ export default function AddLeaseModal({ isVerified = true }: { isVerified?: bool
                                                     <SelectValue placeholder={selectedBuildingId ? "Select unit" : "Select building first"} />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {units.map((u: any) => (
-                                                        <SelectItem key={u.id} value={u.id}>
-                                                            Unit {u.unitNumber} — {u.bedrooms}BR / {u.rentAmount} USDC
-                                                        </SelectItem>
-                                                    ))}
+                                                    {units.map((u: any) => {
+                                                        const hasActiveLease = u.leases?.some((l: any) => l.status === "ACTIVE");
+                                                        const hasPendingLease = u.leases?.some((l: any) => l.status === "PENDING");
+                                                        return (
+                                                            <SelectItem key={u.id} value={u.id} disabled={hasActiveLease}>
+                                                                Unit {u.unitNumber} — {u.bedrooms}BR / {u.rentAmount} USDC 
+                                                                {hasActiveLease ? " (Occupied)" : hasPendingLease ? " (Reserved)" : ""}
+                                                            </SelectItem>
+                                                        );
+                                                    })}
                                                     {units.length === 0 && selectedBuildingId && (
                                                         <div className="px-4 py-3 text-xs text-slate-400 italic">No available units</div>
                                                     )}
