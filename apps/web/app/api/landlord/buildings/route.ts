@@ -84,9 +84,12 @@ export async function POST(req: NextRequest) {
             }, { status: 400 });
         }
 
+        // Strip landlordId and id to avoid type conflict with session.id
+        const { landlordId, id, ...dataToCreate } = validation.data;
+
         const newBuilding = await prisma.building.create({
             data: {
-                ...validation.data,
+                ...dataToCreate,
                 landlordId: session.id
             }
         });

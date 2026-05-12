@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { buildingSchema } from "../../zod";
 
 export async function GET(req: NextRequest) {
-    
+
     const session = await getSession();
     const landlordId = session?.id;
 
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
             buildings,
         });
     } catch (error) {
-        
+
         return NextResponse.json({
             success: false,
             message: "Error fetching buildings",
@@ -37,29 +37,40 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-
     try {
+        const session = await getSession();
+        if (!session || session.role !== "LANDLORD") {
+            return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json();
         const validation = buildingSchema.safeParse(body);
         if (!validation.success) {
             return NextResponse.json({
                 success: false,
-                message: "Invalid building data",
+                message: validation.error.issues[0]?.message || "Invalid building data",
             }, { status: 400 });
         }
+
+        // Strip landlordId from data if it exists to avoid type conflict with session.id
+        const { landlordId, id, ...dataToCreate } = validation.data;
+
         const building = await prisma.building.create({
-            data: validation.data,
+            data: {
+                ...dataToCreate,
+                landlordId: session.id
+            },
         });
+
         return NextResponse.json({
             success: true,
             building,
         });
     } catch (error) {
-        
         return NextResponse.json({
             success: false,
             message: "Error creating building",
         }, { status: 500 });
     }
-}
 
+}
