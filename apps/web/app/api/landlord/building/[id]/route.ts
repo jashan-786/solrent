@@ -67,14 +67,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             occupied: occupiedUnits,
             monthlyyield: projectedYield,
             actualYield,
-            units_list: rawUnits.map(unit => ({
-                ...unit,
-                leases: unit.leases.map(lease => ({
-                    ...lease,
-                    onChainId: lease.onChainId?.toString() || null,
-                    nextDueTimestamp: lease.nextDueTimestamp?.toString() || null,
-                }))
-            })),
+            units_list: rawUnits,
             img: "/building-landing.png"
         };
 
