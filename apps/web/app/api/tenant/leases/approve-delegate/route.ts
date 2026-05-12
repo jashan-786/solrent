@@ -44,6 +44,8 @@ export async function POST(req: NextRequest) {
             }, { status: 404 });
         }
 
+        console.log(`[ApproveDelegate] Updating lease ${leaseId} to enabled: ${enabled} for user ${session.id}`);
+
         await prisma.lease.update({
             where: { id: leaseId },
             data: {
@@ -51,6 +53,8 @@ export async function POST(req: NextRequest) {
                 autoPayEnabled: enabled,
             },
         });
+
+        console.log(`[ApproveDelegate] Successfully updated lease ${leaseId}`);
 
         await prisma.notification.create({
             data: {

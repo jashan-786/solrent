@@ -54,6 +54,9 @@ export async function POST(req: NextRequest) {
             data: { status: "ACTIVE" },
         });
 
+        const now = new Date();
+        const isOverdue = new Date(updated.startDate) < now;
+
         await prisma.payment.create({
             data: {
                 leaseId: updated.id,
@@ -61,7 +64,7 @@ export async function POST(req: NextRequest) {
                 amount: updated.monthlyRent,
                 stablecoin: updated.stablecoin,
                 dueDate: updated.startDate, 
-                status: "UPCOMING",
+                status: isOverdue ? "OVERDUE" : "UPCOMING",
             },
         });
 

@@ -84,24 +84,36 @@ export async function POST(req: NextRequest) {
             }
 
             // ADVANCE THE SCHEDULE: Create the NEXT monthly milestone
-            const currentDue = lease.nextDueTimestamp 
-                ? Number(lease.nextDueTimestamp) 
-                : Math.floor(new Date().getTime() / 1000);
+            const currentDueDate = currentUpcoming?.dueDate ? new Date(currentUpcoming.dueDate) : new Date();
+            const nextDueDate = new Date(currentDueDate);
+            nextDueDate.setMonth(nextDueDate.getMonth() + 1);
             
-            // Advance by 30 days (approx 1 month)
-            const nextDueSecs = currentDue + 2592000;
-            const nextDueDate = new Date(nextDueSecs * 1000);
+            const nextDueSecs = Math.floor(nextDueDate.getTime() / 1000);
 
-            await prisma.payment.create({
-                data: {
+            // Check if next month's UPCOMING record already exists to avoid duplicates
+            const existingNext = await prisma.payment.findFirst({
+                where: {
                     leaseId,
-                    buildingId: lease.buildingId,
-                    amount: lease.monthlyRent,
                     status: "UPCOMING",
-                    dueDate: nextDueDate,
-                    stablecoin: lease.stablecoin || "USDC",
+                    dueDate: {
+                        gte: new Date(nextDueDate.getFullYear(), nextDueDate.getMonth(), 1),
+                        lt: new Date(nextDueDate.getFullYear(), nextDueDate.getMonth() + 1, 1),
+                    }
                 }
             });
+
+            if (!existingNext) {
+                await prisma.payment.create({
+                    data: {
+                        leaseId,
+                        buildingId: lease.buildingId,
+                        amount: lease.monthlyRent,
+                        status: "UPCOMING",
+                        dueDate: nextDueDate,
+                        stablecoin: lease.stablecoin || "USDC",
+                    }
+                });
+            }
 
             // Update lease with next due date
             await prisma.lease.update({

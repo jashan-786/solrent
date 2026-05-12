@@ -130,19 +130,7 @@ export async function POST(req: NextRequest) {
             data: { occupied: true },
         });
 
-        const firstDueDate = new Date(startDate);
-        firstDueDate.setMonth(firstDueDate.getMonth() + 1);
 
-        await prisma.payment.create({
-            data: {
-                leaseId: lease.id,
-                buildingId: data.buildingId,
-                amount: data.monthlyRent,
-                stablecoin: data.stablecoin,
-                dueDate: firstDueDate,
-                status: "UPCOMING",
-            },
-        });
 
         await prisma.notification.create({
             data: {

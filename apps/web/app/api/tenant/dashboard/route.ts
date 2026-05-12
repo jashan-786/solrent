@@ -34,6 +34,12 @@ export async function GET(req: NextRequest) {
 
         const activeLease = tenant.tenantLeases
             .map(l => ({ ...l, effectiveStatus: getEffectiveLeaseStatus(l.status, l.endDate) }))
+            .sort((a, b) => {
+                const priority: Record<string, number> = { "ACTIVE": 0, "TERMINATION_REQUESTED": 1, "PENDING": 2 };
+                const aP = priority[a.effectiveStatus] ?? 99;
+                const bP = priority[b.effectiveStatus] ?? 99;
+                return aP - bP;
+            })
             .find(l => 
                 l.effectiveStatus === "ACTIVE" || 
                 l.effectiveStatus === "PENDING" || 
@@ -77,8 +83,33 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        const nextPayment = allPayments.find(p => p.status === "UPCOMING" || p.status === "OVERDUE");
-        const pastPayments = allPayments
+        const now = new Date();
+        const deduplicated = allPayments.reduce((acc: any[], current) => {
+            const date = new Date(current.dueDate);
+            const monthYear = `${date.getMonth()}-${date.getFullYear()}`;
+            const existing = acc.find(p => {
+                const pDate = new Date(p.dueDate);
+                return `${pDate.getMonth()}-${pDate.getFullYear()}` === monthYear;
+            });
+            if (!existing) {
+                acc.push(current);
+            } else if (current.status === "COMPLETED" && existing.status !== "COMPLETED") {
+                // If we have a duplicate and one is completed, keep the completed one
+                const index = acc.indexOf(existing);
+                acc[index] = current;
+            }
+            return acc;
+        }, []);
+
+        const processedPayments = deduplicated.map(p => {
+            if (p.status === "UPCOMING" && new Date(p.dueDate) < now) {
+                return { ...p, status: "OVERDUE" };
+            }
+            return p;
+        });
+
+        const nextPayment = processedPayments.find(p => p.status === "UPCOMING" || p.status === "OVERDUE");
+        const pastPayments = processedPayments
             .filter(p => p.status === "COMPLETED" || p.status === "FAILED")
             .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
 

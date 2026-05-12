@@ -31,11 +31,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
         // Advance the Lease milestone
         if (updatedPayment.lease) {
-            const currentDue = updatedPayment.lease.nextDueTimestamp 
-                ? Number(updatedPayment.lease.nextDueTimestamp) 
-                : Math.floor(new Date().getTime() / 1000);
-            
-            const nextDueSecs = currentDue + 2592000;
+            const currentDueDate = new Date(updatedPayment.dueDate);
+            const nextDueDate = new Date(currentDueDate);
+            nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+
+            const nextDueSecs = Math.floor(nextDueDate.getTime() / 1000);
 
             await prisma.lease.update({
                 where: { id: updatedPayment.leaseId },
@@ -44,17 +44,30 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                 }
             });
 
-            // Create next month's UPCOMING record
-            await prisma.payment.create({
-                data: {
+            // Check if next month's UPCOMING record already exists to avoid duplicates
+            const existingNext = await prisma.payment.findFirst({
+                where: {
                     leaseId: updatedPayment.leaseId,
-                    buildingId: updatedPayment.buildingId,
-                    amount: updatedPayment.lease.monthlyRent,
                     status: "UPCOMING",
-                    dueDate: new Date(nextDueSecs * 1000),
-                    stablecoin: updatedPayment.lease.stablecoin || "USDC",
+                    dueDate: {
+                        gte: new Date(nextDueDate.getFullYear(), nextDueDate.getMonth(), 1),
+                        lt: new Date(nextDueDate.getFullYear(), nextDueDate.getMonth() + 1, 1),
+                    }
                 }
             });
+
+            if (!existingNext) {
+                await prisma.payment.create({
+                    data: {
+                        leaseId: updatedPayment.leaseId,
+                        buildingId: updatedPayment.buildingId,
+                        amount: updatedPayment.lease.monthlyRent,
+                        status: "UPCOMING",
+                        dueDate: nextDueDate,
+                        stablecoin: updatedPayment.lease.stablecoin || "USDC",
+                    }
+                });
+            }
         }
 
         return NextResponse.json({ success: true, payment: updatedPayment });

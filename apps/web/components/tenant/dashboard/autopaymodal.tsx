@@ -167,6 +167,7 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
                 enabled: newStatus
             });
 
+            await checkOnChainStatus();
             mutate("/api/tenant/dashboard");
             setOpen(false);
         } catch (err: any) {
@@ -181,11 +182,14 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
             <DialogTrigger asChild>
                 <Button
                     variant={isAutoPayEnabled ? "outline" : "default"}
-                    className={`flex items-center gap-2 ${isAutoPayEnabled ? "border-sol-emerald text-sol-emerald hover:bg-sol-emerald/10" : "bg-sol-indigo hover:bg-sol-indigo/90"}`}
+                    className={`flex items-center gap-2 px-6 h-12 rounded-2xl font-bold transition-all ${isAutoPayEnabled 
+                        ? "border-sol-emerald/30 text-sol-emerald bg-sol-emerald/5 hover:bg-sol-emerald/10 shadow-sm" 
+                        : "bg-sol-indigo hover:bg-sol-indigo/90 text-white shadow-md shadow-sol-indigo/20"
+                    }`}
                     disabled={!isDevnetStablecoinAllowed}
                 >
-                    <Activity size={16} />
-                    {isAutoPayEnabled ? "Manage Auto-Pay" : "Enable Auto-Pay"}
+                    <Activity size={18} className={isAutoPayEnabled ? "animate-pulse" : ""} />
+                    {isAutoPayEnabled ? "Auto-Pay: ON" : "Enable Auto-Pay"}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] bg-white rounded-3xl p-6 border-none shadow-2xl">
