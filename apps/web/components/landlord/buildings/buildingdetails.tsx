@@ -251,6 +251,7 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                         <TableRow className="hover:bg-transparent border-background-100">
                                             <TableHead className="text-tiny font-bold uppercase text-text-400">Unit</TableHead>
                                             <TableHead className="text-tiny font-bold uppercase text-text-400">Tenant</TableHead>
+                                            <TableHead className="text-tiny font-bold uppercase text-text-400">Invite Code</TableHead>
                                             <TableHead className="text-tiny font-bold uppercase text-text-400">Rent</TableHead>
                                             <TableHead className="text-tiny font-bold uppercase text-text-400">Type</TableHead>
                                             <TableHead className="text-tiny font-bold uppercase text-text-400">Status</TableHead>
@@ -272,6 +273,23 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                             </div>
                                                         ) : (
                                                             <span className="text-text-400 italic">No tenant</span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-text-600 font-mono text-[10px] font-black">
+                                                        {unit.inviteCodes && unit.inviteCodes.length > 0 ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="bg-secondary-50 px-2 py-1 rounded border border-secondary-100 text-secondary-600">
+                                                                    {unit.inviteCodes[0].code}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => navigator.clipboard.writeText(unit.inviteCodes[0].code)}
+                                                                    className="text-secondary-400 hover:text-secondary-600"
+                                                                >
+                                                                    <History size={12} />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-text-300 italic">—</span>
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-text-600 font-medium">{unit.rentAmount} USDC</TableCell>
@@ -296,13 +314,13 @@ export default function BuildingDetailsPage({ building }: { building: Building }
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl">
                                                                 <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-text-400">Unit Actions</DropdownMenuLabel>
-                                                                <DropdownMenuItem 
+                                                                <DropdownMenuItem
                                                                     onClick={() => router.push('/landlord/leases')}
                                                                     className="gap-2 font-bold cursor-pointer"
                                                                 >
                                                                     View Active Lease
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem 
+                                                                <DropdownMenuItem
                                                                     onClick={() => alert("Edit unit feature coming soon")}
                                                                     className="gap-2 font-bold cursor-pointer"
                                                                 >

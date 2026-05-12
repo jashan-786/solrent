@@ -21,6 +21,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             where: { id },
             include: {
                 _count: { select: { units: true } },
+                inviteCodes: {
+                    where: { isUsed: false },
+                    orderBy: { createdAt: 'desc' }
+                },
                 units: {
                     select: {
                         id: true,
@@ -36,6 +40,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                                     select: { name: true, email: true, avatarUrl: true, walletAddress: true }
                                 }
                             }
+                        },
+                        inviteCodes: {
+                            orderBy: { createdAt: 'desc' },
+                            take: 1
                         }
                     }
                 }

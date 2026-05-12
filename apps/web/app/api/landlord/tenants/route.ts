@@ -55,7 +55,8 @@ export async function GET(req: NextRequest) {
                 leaseStatus: activeLease?.status || "PENDING",
                 paymentStatus: lastPayment?.status || "UPCOMING",
                 nextDue: lastPayment?.dueDate ? new Date(lastPayment.dueDate).toLocaleDateString() : "N/A",
-                walletAddress: t.walletAddress
+                walletAddress: t.walletAddress,
+                inviteCode: t.usedInviteCode?.code || "N/A"
             };
         });
 

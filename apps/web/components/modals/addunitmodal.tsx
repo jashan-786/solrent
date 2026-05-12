@@ -36,15 +36,15 @@ export function AddUnitModal({ buildingId, children }: { buildingId: string, chi
                 bathrooms: parseInt(bathrooms),
                 occupied: false
             });
-            
+
             mutate(`/api/landlord/building/${buildingId}`);
             mutate(`/api/landlord/units?buildingId=${buildingId}`);
             setOpen(false);
-            
+
             setUnitNumber("");
             setRentAmount("");
         } catch (error) {
-            
+
         } finally {
             setLoading(false);
         }
@@ -91,8 +91,8 @@ export function AddUnitModal({ buildingId, children }: { buildingId: string, chi
                 </div>
 
                 <DialogFooter>
-                    <Button 
-                        onClick={handleSubmit} 
+                    <Button
+                        onClick={handleSubmit}
                         disabled={loading || !unitNumber || !rentAmount}
                         className="w-full bg-secondary-500 hover:bg-secondary-600 text-white font-bold h-12"
                     >

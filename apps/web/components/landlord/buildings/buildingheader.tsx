@@ -63,21 +63,21 @@ export default function BuildingHeader({
                 </div>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mt-8">
-                <div className="relative w-full lg:max-w-md">
+            <div className="col-span-12 md:col-span-4 flex flex-col gap-3 justify-end">
+                <div className="relative w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-400" />
                     <Input
-                        placeholder="Search properties by name or location..."
-                        className="pl-10 bg-white border-none shadow-sm h-12 rounded-2xl focus-visible:ring-sol-indigo font-medium"
+                        placeholder="Search properties..."
+                        className="pl-10 bg-white border-none shadow-sm h-11 rounded-xl focus-visible:ring-sol-indigo"
                         onChange={(e) => onSearch?.(e.target.value)}
                     />
                 </div>
 
-                <div className="flex items-center gap-3 p-1.5 rounded-2xl shadow-sm bg-background-50/50 border border-background-100">
+                <div className="grid grid-cols-3 gap-2 p-2 rounded-xl shadow-sm bg-background-grey">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="bg-white text-primary-900 h-10 text-[10px] font-black uppercase gap-2 hover:bg-white/90 shadow-sm border-none rounded-xl">
-                                <PersonStanding size={14} className="text-secondary-500" /> {currentFilters.occupancy || "Status"}
+                            <Button className="bg-white text-black h-10 text-[10px] font-bold uppercase gap-2 hover:bg-white shadow-none border-none">
+                                <PersonStanding size={14} /> {currentFilters.occupancy || "Status"}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="w-40 rounded-xl bg-white border-none shadow-xl p-1">
@@ -89,8 +89,8 @@ export default function BuildingHeader({
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="bg-white text-primary-900 h-10 text-[10px] font-black uppercase gap-2 hover:bg-white/90 shadow-sm border-none rounded-xl">
-                                <TowerControl size={14} className="text-secondary-500" /> {currentFilters.city || "City"}
+                            <Button className="bg-white text-black h-10 text-[10px] font-bold uppercase gap-2 hover:bg-white shadow-none border-none">
+                                <TowerControl size={14} /> {currentFilters.city || "City"}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="w-40 rounded-xl bg-white border-none shadow-xl p-1">
@@ -105,8 +105,8 @@ export default function BuildingHeader({
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="bg-white text-primary-900 h-10 text-[10px] font-black uppercase gap-2 hover:bg-white/90 shadow-sm border-none rounded-xl">
-                                <SortAsc size={14} className="text-secondary-500" /> Sort: {currentFilters.sortBy}
+                            <Button className="bg-white text-black h-10 text-[10px] font-bold uppercase gap-2 hover:bg-white shadow-none border-none">
+                                <SortAsc size={14} /> {currentFilters.sortBy}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="w-40 rounded-xl bg-white border-none shadow-xl p-1">

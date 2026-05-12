@@ -99,6 +99,7 @@ export default function TenantTable({ search, buildingFilter, leaseStatusFilter,
                             <TableRow className="hover:bg-transparent border-b border-background-100">
                                 <TableHead className="text-[10px] font-black uppercase tracking-widest py-6 px-8 text-text-400">Tenant Name</TableHead>
                                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-text-400">Building / Unit</TableHead>
+                                <TableHead className="text-[10px] font-black uppercase tracking-widest text-text-400">Invite Code</TableHead>
                                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-center text-text-400">Lease Status</TableHead>
                                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-text-400">Payment Status</TableHead>
                                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-text-400">Next Due</TableHead>
@@ -137,6 +138,12 @@ export default function TenantTable({ search, buildingFilter, leaseStatusFilter,
                                             <span className="font-bold text-primary-900 text-sm">{tenant.building}</span>
                                             <span className="text-xs text-text-400 font-black uppercase tracking-tighter mt-0.5">Unit {tenant.unit}</span>
                                         </div>
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <span className="text-xs font-black font-mono bg-secondary-50 text-secondary-600 px-2 py-1 rounded border border-secondary-100">
+                                            {tenant.inviteCode}
+                                        </span>
                                     </TableCell>
 
                                     <TableCell className="text-center">
