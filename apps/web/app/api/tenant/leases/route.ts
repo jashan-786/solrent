@@ -71,6 +71,7 @@ export async function GET(req: NextRequest) {
                 ...lease,
                 status: effectiveStatus,
                 onChainId: lease.onChainId?.toString() || null,
+                nextDueTimestamp: lease.nextDueTimestamp?.toString() || null,
             };
         });
 

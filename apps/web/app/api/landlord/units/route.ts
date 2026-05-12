@@ -21,6 +21,9 @@ export async function GET(req: NextRequest) {
                 leases: {
                     where: { status: { in: ["ACTIVE", "PENDING"] } },
                     include: { tenant: true }
+                },
+                inviteCodes: {
+                    where: { isUsed: false }
                 }
             }
         });

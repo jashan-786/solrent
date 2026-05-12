@@ -102,15 +102,16 @@ export default function InviteTenantModal({ isVerified = true }: { isVerified?: 
                                     className="w-full h-12 rounded-xl bg-background-100 border-none px-4 text-primary-900 font-bold focus:ring-2 focus:ring-secondary-500 transition-all outline-none cursor-pointer"
                                 >
                                     <option value="">All Units / General Invite</option>
-                                    {unitsData?.units?.map((u: any) => {
+                                    {unitsData?.units?.filter((u: any) => {
                                         const hasActiveLease = u.leases?.some((l: any) => l.status === "ACTIVE");
                                         const hasPendingLease = u.leases?.some((l: any) => l.status === "PENDING");
-                                        return (
-                                            <option key={u.id} value={u.id} disabled={hasActiveLease}>
-                                                {u.unitNumber} ({u.rentAmount} USDC) {hasActiveLease ? " — Occupied" : hasPendingLease ? " — Reserved" : ""}
-                                            </option>
-                                        );
-                                    })}
+                                        const hasPendingInvite = u.inviteCodes && u.inviteCodes.length > 0;
+                                        return !hasActiveLease && !hasPendingLease && !hasPendingInvite;
+                                    }).map((u: any) => (
+                                        <option key={u.id} value={u.id}>
+                                            {u.unitNumber} ({u.rentAmount} USDC)
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         )}

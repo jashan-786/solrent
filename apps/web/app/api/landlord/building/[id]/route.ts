@@ -21,10 +21,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             where: { id },
             include: {
                 _count: { select: { units: true } },
-                inviteCodes: {
-                    where: { isUsed: false },
-                    orderBy: { createdAt: 'desc' }
-                },
                 units: {
                     select: {
                         id: true,
@@ -64,7 +60,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         // Clean mapping to avoid BigInt serialization issues
         const { units: rawUnits, ...buildingData } = building;
-        
+
         const mappedBuilding = {
             ...buildingData,
             units: totalUnits,
@@ -88,7 +84,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         }, { status: 200 });
 
     } catch (error: any) {
-        
+
         return NextResponse.json(
             {
                 success: false,
@@ -124,7 +120,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         });
 
     } catch (error) {
-        
+
         return NextResponse.json({
             success: false,
             message: "Error updating building",
@@ -163,7 +159,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             }, { status: 200 })
 
     } catch (error) {
-        
+
         return NextResponse.json(
             {
                 success: false,
