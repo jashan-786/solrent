@@ -11,9 +11,10 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useAuth } from "@/store/useAuth";
 import axios from "axios";
+import { frontendRegistrationSchema } from "@/app/api/zod";
 
 export const RegisterForm = () => {
-    const { publicKey, signMessage, connected } = useWallet();
+    const { publicKey, signMessage, connected, disconnect } = useWallet();
     const { setVisible } = useWalletModal();
     const { setUser } = useAuth();
 
@@ -29,15 +30,23 @@ export const RegisterForm = () => {
     });
 
     const handleNext = () => {
-        if (!formData.name || !formData.email) {
-            setError("Name and Email are required");
+        setError(null);
+        const result = frontendRegistrationSchema.safeParse({
+            ...formData,
+            role
+        });
+
+        if (!result.success) {
+            const firstError = result.error.issues[0]?.message || "Invalid input";
+            setError(firstError);
             return;
         }
+
         if (role === "TENANT" && !formData.code) {
             setError("Invite code is required for tenants");
             return;
         }
-        setError(null);
+
         setStep(2);
     }
 
@@ -179,6 +188,17 @@ export const RegisterForm = () => {
                                 </>
                             )}
                         </Button>
+                        
+                        {connected && (
+                            <button 
+                                onClick={() => disconnect()}
+                                className="text-xs text-text-400 hover:text-text-600 underline"
+                                disabled={isLoading}
+                            >
+                                Disconnect Wallet
+                            </button>
+                        )}
+
                         <Button variant="ghost" onClick={() => setStep(1)} className="w-full text-text-500 hover:bg-background-100" disabled={isLoading}>
                             Back
                         </Button>

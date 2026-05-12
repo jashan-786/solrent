@@ -20,24 +20,52 @@ export const userSchema = z.object({
 export const tenantSchema = userSchema;
 export type Tenant = z.infer<typeof tenantSchema>;
 
+export const frontendRegistrationSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    role: UserRoleEnum.default("TENANT"),
+    code: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (data.role === "TENANT" && (!data.code || data.code.trim().length === 0)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Invite code is required for tenants",
+            path: ["code"],
+        });
+    }
+});
+
+export const baseRegistrationSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    role: UserRoleEnum.default("TENANT"),
+    code: z.string().optional(),
+    walletAddress: z.string().min(32).max(44),
+    signature: z.array(z.number()),
+    message: z.string(),
+});
+
+export const registrationSchema = baseRegistrationSchema;
+export const landlordRegistrationSchema = baseRegistrationSchema.omit({ code: true });
+
 export const buildingSchema = z.object({
     id: z.string().cuid().optional(),
-    name: z.string().min(1, "Name is required"),
-    address: z.string().min(1, "Address is required"),
+    name: z.string().min(1, "Building name is required"),
+    address: z.string().min(1, "Street address is required"),
     city: z.string().min(1, "City is required"),
     province: z.string().min(1, "Province is required"),
-    postalCode: z.string().min(1, "Postal Code is required"),
-    landlordId: z.string().cuid("Landlord ID is required")
+    postalCode: z.string().min(1, "Postal code is required"),
+    landlordId: z.string().cuid().optional()
 });
 
 export const unitSchema = z.object({
     id: z.string().cuid().optional(),
     buildingId: z.string().cuid("Building ID is required"),
-    unitNumber: z.string().min(1, "Unit Number is required"),
-    bedrooms: z.number().int().min(0, "Bedrooms must be positive"),
-    bathrooms: z.number().int().min(0, "Bathrooms must be positive"),
+    unitNumber: z.string().min(1, "Unit number is required"),
+    bedrooms: z.number().int().min(0, "Bedrooms must be non-negative"),
+    bathrooms: z.number().int().min(0, "Bathrooms must be non-negative"),
     squareFeet: z.number().int().nullable().optional(),
-    rentAmount: z.number().positive("Rent amount must be positive"),
+    rentAmount: z.number().positive("Rent must be positive"),
     occupied: z.boolean().default(false),
 });
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { buildingSchema } from "@/app/api/zod";
 
 export async function GET(req: NextRequest) {
     try {
@@ -74,19 +75,18 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { name, address, city, province, postalCode } = body;
+        const validation = buildingSchema.safeParse(body);
 
-        if (!name || !address || !city) {
-            return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
+        if (!validation.success) {
+            return NextResponse.json({ 
+                success: false, 
+                message: validation.error.issues[0]?.message || "Invalid building data" 
+            }, { status: 400 });
         }
 
         const newBuilding = await prisma.building.create({
             data: {
-                name,
-                address,
-                city,
-                province: province || "",
-                postalCode: postalCode || "",
+                ...validation.data,
                 landlordId: session.id
             }
         });

@@ -4,14 +4,9 @@ import { z } from "zod";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 import { signJWT } from "@/lib/auth";
+import { landlordRegistrationSchema } from "@/app/api/zod";
 
-const registerSchema = z.object({
-    walletAddress: z.string().min(32).max(44),
-    signature: z.array(z.number()),
-    message: z.string(),
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Valid email required"),
-});
+const registerSchema = landlordRegistrationSchema;
 
 export async function POST(req: NextRequest) {
     try {
