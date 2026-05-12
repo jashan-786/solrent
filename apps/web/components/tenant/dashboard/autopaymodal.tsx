@@ -41,24 +41,31 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
         if (!publicKey || !lease) return;
         try {
             const landlordPubkey = new PublicKey(buildingWallet);
-            const onChainIdStr = lease.onChainId || lease.unit.id;
+            const onChainIdStr = lease.onChainId;
+            
+            if (!onChainIdStr || isNaN(Number(onChainIdStr))) {
+                console.log("[AutoPayModal] Skipping on-chain check: No valid on-chain ID found", { onChainIdStr });
+                setOnChainAutoPay(null);
+                return;
+            }
+
             const unitId = BigInt(onChainIdStr);
             const [leasePDA] = getLeasePDA(landlordPubkey, publicKey, unitId);
             const [delegatePDA] = getDelegatePDA(leasePDA, unitId);
 
             const info = await connection.getAccountInfo(delegatePDA);
             const isEnabled = !!info;
+            
+            console.log("[AutoPayModal] On-chain check result:", { isEnabled, onChainIdStr });
             setOnChainAutoPay(isEnabled);
 
         } catch (err: any) {
-            if (err.response?.status === 401) {
-                return;
-            }
-
+            console.error("[AutoPayModal] On-chain check failed:", err);
+            setOnChainAutoPay(null); 
         }
     };
 
-    const isAutoPayEnabled = onChainAutoPay !== null ? onChainAutoPay : (lease?.autoPayEnabled || false);
+    const isAutoPayEnabled = !!(onChainAutoPay || lease?.autoPayEnabled);
     const isMainnet = connection.rpcEndpoint?.toLowerCase().includes("mainnet");
     const isDevnetStablecoinAllowed = isMainnet || lease?.stablecoin === "USDC";
 
@@ -82,10 +89,10 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
             const program = getProgram(provider) as any;
 
             const landlordPubkey = new PublicKey(buildingWallet);
-            const onChainIdStr = lease.onChainId || lease.unit.id;
+            const onChainIdStr = lease.onChainId;
 
-            if (!onChainIdStr) {
-                throw new Error("This lease is not fully initialized on-chain.");
+            if (!onChainIdStr || isNaN(Number(onChainIdStr))) {
+                throw new Error("This lease does not have a valid on-chain ID. Please contact support.");
             }
 
             const unitId = BigInt(onChainIdStr);
@@ -167,8 +174,12 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
                 enabled: newStatus
             });
 
-            await checkOnChainStatus();
-            mutate("/api/tenant/dashboard");
+            // Wait 2 seconds for RPC to index before re-checking
+            setTimeout(async () => {
+                await checkOnChainStatus();
+                mutate("/api/tenant/dashboard");
+            }, 2000);
+            
             setOpen(false);
         } catch (err: any) {
             alert("An error occurred: " + (err.response?.data?.message || err.message));
@@ -189,7 +200,7 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
                     disabled={!isDevnetStablecoinAllowed}
                 >
                     <Activity size={18} className={isAutoPayEnabled ? "animate-pulse" : ""} />
-                    {isAutoPayEnabled ? "Auto-Pay: ON" : "Enable Auto-Pay"}
+                    {isAutoPayEnabled ? "Turn OFF Auto-Pay" : "Enable Auto-Pay"}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] bg-white rounded-3xl p-6 border-none shadow-2xl">
