@@ -111,6 +111,34 @@ npx prisma db push
 pnpm dev
 ```
 
+## 🧪 Testing the Application
+
+To fully test SolRent, you'll need a Solana wallet (e.g., Phantom or Solflare) set to **Devnet**.
+
+### 1. Get Test Assets
+SolRent runs on **USDC** (Devnet). We've built in a developer faucet for easy testing:
+- **USDC Faucet**: Navigate to the dashboard or settings and look for "Mint Devnet Funds" or use the developer endpoint directly: `GET /api/dev/faucet/usdc?publicKey=YOUR_WALLET_ADDRESS`.
+- **SOL**: You'll need a small amount of SOL for transaction fees. Use the [Solana Faucet](https://faucet.solana.com/).
+
+### 2. Landlord Workflow (Phase 1)
+1.  **Register**: Go to `/register`, select **Landlord**, and connect your wallet.
+2.  **Verify Setup**: Click **"Complete Setup"** on the dashboard to initialize your USDC account.
+3.  **Add Property**: Click **"Add Property"** and fill in the building details.
+4.  **Invite Tenant**: Open the building view, click **"Invite Tenant"**, select a unit (optional), and **Generate Invite Code**. Copy this code.
+
+### 3. Tenant Workflow (Phase 2)
+1.  **Register**: Open a new private window, go to `/register`, select **Tenant**.
+2.  **Link Lease**: Enter the **Invite Code** you copied from the landlord.
+3.  **Dashboard**: Once registered, you'll see your active lease and a **"Pay Rent"** button.
+
+### 4. Auto-Pay & Automated Collection
+- **Delegate**: As a tenant, go to **Settings** and toggle **"Auto-Pay"**. This authorizes the SolRent contract to collect rent on your behalf.
+- **Trigger Collection**: You can manually trigger the collection bot (as a developer) by calling:
+  `POST /api/cron/collect` with the `CRON_SECRET` header.
+
+---
+
+
 ### 3. Vercel Deployment (Monorepo)
 
 When deploying to Vercel, ensure the following:
