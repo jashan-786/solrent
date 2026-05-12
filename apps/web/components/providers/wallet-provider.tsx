@@ -18,16 +18,22 @@ export const SolanaWalletProvider = ({ children }: { children: React.ReactNode }
             : WalletAdapterNetwork.Devnet);
 
     const endpoint = useMemo(() => {
-        
         const devnet = process.env.NEXT_PUBLIC_HELIUS_DEVNET_RPC_URL;
         const mainnet = process.env.NEXT_PUBLIC_HELIUS_MAINNET_RPC_URL;
+        const fallback = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
 
-        if (network === WalletAdapterNetwork.Mainnet && mainnet) return mainnet;
-        if (network === WalletAdapterNetwork.Devnet && devnet) return devnet;
+        let url = "";
+        if (network === WalletAdapterNetwork.Mainnet && mainnet) url = mainnet;
+        else if (network === WalletAdapterNetwork.Devnet && devnet) url = devnet;
+        else if (fallback) url = fallback;
+        else url = clusterApiUrl(network);
 
-        if (process.env.NEXT_PUBLIC_SOLANA_RPC_URL) return process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
+        // Final safety check to satisfy @solana/web3.js validation
+        if (!url || (!url.startsWith("http://") && !url.startsWith("https://"))) {
+            return clusterApiUrl(network);
+        }
 
-        return clusterApiUrl(network);
+        return url;
     }, [network]);
 
     const wallets = useMemo(

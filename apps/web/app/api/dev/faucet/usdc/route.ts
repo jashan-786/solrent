@@ -23,7 +23,6 @@ export async function POST(req: NextRequest) {
         const session = await getSession();
         const devBypass = isDevApiBypassAuthorized(req);
         
-        // Prioritize explicitly provided wallet, fallback to session
         let userWallet: string | null = parsed.data.walletAddress || session?.walletAddress || null;
         
         if (!userWallet) {
@@ -38,12 +37,14 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const rpc = process.env.SOLANA_DEVNET_RPC_URL || 
-                    process.env.NEXT_PUBLIC_HELIUS_DEVNET_RPC_URL || 
-                    process.env.NEXT_PUBLIC_RPC_URL ||
-                    "https://api.devnet.solana.com";
+        const rpcRaw = process.env.SOLANA_DEVNET_RPC_URL || 
+                       process.env.NEXT_PUBLIC_HELIUS_DEVNET_RPC_URL || 
+                       process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
+                       "https://api.devnet.solana.com";
 
-        if (!rpc.toLowerCase().includes("devnet") && !rpc.toLowerCase().includes("api.devnet")) {
+        const finalRpc = rpcRaw.trim().startsWith("http") ? rpcRaw.trim() : "https://api.devnet.solana.com";
+
+        if (!finalRpc.toLowerCase().includes("devnet") && !finalRpc.toLowerCase().includes("api.devnet")) {
             return NextResponse.json({ success: false, message: "Devnet RPC not configured correctly" }, { status: 500 });
         }
 
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
             }, { status: 500 });
         }
 
-        const connection = new Connection(rpc, "confirmed");
+        const connection = new Connection(finalRpc, "confirmed");
         const mint = new PublicKey(configuredMint);
         const userPubkey = new PublicKey(userWallet);
 
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
             userAta: userAta.address.toBase58(),
         });
     } catch (error: any) {
-        
+        console.error("[Faucet] Error:", error);
         return NextResponse.json({ success: false, message: error?.message || "Server error" }, { status: 500 });
     }
 }
