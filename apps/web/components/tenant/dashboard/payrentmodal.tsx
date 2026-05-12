@@ -179,7 +179,7 @@ export function PayRentModal({ payment, buildingWallet }: { payment: any, buildi
                 signature = await sendTransaction(payTx, connection, { signers: [nftMint], skipPreflight: true });
             } catch (e: any) {
                 if (e.message?.toLowerCase().includes("user rejected") || e.name === "WalletSendTransactionError" || e.code === 4001 || e.toString().toLowerCase().includes("rejected")) {
-                    
+
                     setLoading(false);
                     setStatus("idle");
                     return;
@@ -188,11 +188,7 @@ export function PayRentModal({ payment, buildingWallet }: { payment: any, buildi
             }
 
             setStatus("confirming");
-            const confirmation = await connection.confirmTransaction({ signature, blockhash: freshBlockhash, lastValidBlockHeight: freshHeight }, "confirmed");
-
-            if (confirmation.value.err) {
-                throw new Error(`Payment transaction failed on-chain: ${JSON.stringify(confirmation.value.err)}`);
-            }
+            await connection.confirmTransaction({ signature, blockhash: freshBlockhash, lastValidBlockHeight: freshHeight }, "confirmed");
 
             try {
                 await axios.post(`/api/tenant/leases/approve-delegate/sync`, { leaseId: payment.leaseId, enabled: true });
@@ -208,7 +204,7 @@ export function PayRentModal({ payment, buildingWallet }: { payment: any, buildi
             setTimeout(() => { setOpen(false); setStatus("idle"); }, 3000);
 
         } catch (error: any) {
-            
+
             setStatus("error");
             if (!error.message?.toLowerCase().includes("user rejected")) {
                 alert("Payment failed: " + error.message);
@@ -276,7 +272,7 @@ export function PayRentModal({ payment, buildingWallet }: { payment: any, buildi
                     <div className="bg-background-100 p-4 rounded-xl flex justify-between items-center border border-background-200">
                         <div>
                             <p className="text-[10px] font-bold text-text-400 uppercase tracking-widest mb-1">Amount Due</p>
-                            <h2 className="text-2xl font-black text-primary-900">{payment.amount} <span className="text-sm font-medium text-text-400">USDC</span></h2>
+                            <h2 className="text-2xl font-black text-primary-900">${payment.amount} <span className="text-sm font-medium text-text-400">USDC</span></h2>
                         </div>
                         <div className="text-right">
                             <p className="text-[10px] font-bold text-text-400 uppercase tracking-widest mb-1">Status</p>

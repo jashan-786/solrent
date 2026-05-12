@@ -149,6 +149,7 @@ export async function GET(req: NextRequest) {
                 nextPayment: nextPayment ? {
                     ...nextPayment,
                     onChainId: activeLease?.onChainId?.toString(),
+                    onChainAddress: activeLease?.onChainAddress,
                     landlordWallet: activeLease?.unit.building.landlord.walletAddress
                 } : null,
                 pastPayments: pastPayments

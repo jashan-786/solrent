@@ -36,13 +36,14 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [onChainAutoPay, setOnChainAutoPay] = useState<boolean | null>(null);
+    const [localAutoPay, setLocalAutoPay] = useState<boolean | null>(null);
 
     const checkOnChainStatus = async () => {
         if (!publicKey || !lease) return;
         try {
             const landlordPubkey = new PublicKey(buildingWallet);
             const onChainIdStr = lease.onChainId;
-            
+
             if (!onChainIdStr || isNaN(Number(onChainIdStr))) {
                 console.log("[AutoPayModal] Skipping on-chain check: No valid on-chain ID found", { onChainIdStr });
                 setOnChainAutoPay(null);
@@ -55,25 +56,39 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
 
             const info = await connection.getAccountInfo(delegatePDA);
             const isEnabled = !!info;
-            
+
             console.log("[AutoPayModal] On-chain check result:", { isEnabled, onChainIdStr });
             setOnChainAutoPay(isEnabled);
 
         } catch (err: any) {
             console.error("[AutoPayModal] On-chain check failed:", err);
-            setOnChainAutoPay(null); 
+            setOnChainAutoPay(null);
         }
     };
 
-    const isAutoPayEnabled = !!(onChainAutoPay || lease?.autoPayEnabled);
+    // Compute final auto-pay state: enabled if either DB, On-Chain, or Local says so.
+    const isAutoPayEnabled = Boolean(
+        localAutoPay === true || 
+        (localAutoPay === null && (lease?.autoPayEnabled === true || onChainAutoPay === true))
+    );
     const isMainnet = connection.rpcEndpoint?.toLowerCase().includes("mainnet");
     const isDevnetStablecoinAllowed = isMainnet || lease?.stablecoin === "USDC";
+
+    useEffect(() => {
+        console.log("[AutoPayModal] State:", { 
+            id: lease?.id, 
+            dbAutoPay: lease?.autoPayEnabled, 
+            onChainAutoPay,
+            localAutoPay,
+            isAutoPayEnabled 
+        });
+    }, [lease?.id, lease?.autoPayEnabled, onChainAutoPay, localAutoPay, isAutoPayEnabled]);
 
     useEffect(() => {
         if (open || publicKey) {
             checkOnChainStatus();
         }
-    }, [open, publicKey, lease?.id]);
+    }, [open, publicKey, lease?.id, lease?.onChainId]);
 
     const toggleAutoPay = async () => {
         if (!publicKey || !wallet?.adapter || !lease) return;
@@ -168,6 +183,9 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
 
             await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
 
+            // Optimistic update
+            setLocalAutoPay(newStatus);
+
             await axios.post(`/api/tenant/leases/approve-delegate`, {
                 leaseId: lease.id,
                 transactionHash: signature,
@@ -177,9 +195,10 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
             // Wait 2 seconds for RPC to index before re-checking
             setTimeout(async () => {
                 await checkOnChainStatus();
+                setLocalAutoPay(null); // Clear local override once synced
                 mutate("/api/tenant/dashboard");
             }, 2000);
-            
+
             setOpen(false);
         } catch (err: any) {
             alert("An error occurred: " + (err.response?.data?.message || err.message));
@@ -193,10 +212,10 @@ export function AutoPayModal({ lease, buildingWallet }: { lease: any, buildingWa
             <DialogTrigger asChild>
                 <Button
                     variant={isAutoPayEnabled ? "outline" : "default"}
-                    className={`flex items-center gap-2 px-6 h-12 rounded-2xl font-bold transition-all ${isAutoPayEnabled 
-                        ? "border-sol-emerald/30 text-sol-emerald bg-sol-emerald/5 hover:bg-sol-emerald/10 shadow-sm" 
+                    className={`flex items-center gap-2 px-6 h-12 rounded-2xl font-bold transition-all ${isAutoPayEnabled
+                        ? "border-sol-emerald/30 text-sol-emerald bg-sol-emerald/5 hover:bg-sol-emerald/10 shadow-sm"
                         : "bg-sol-indigo hover:bg-sol-indigo/90 text-white shadow-md shadow-sol-indigo/20"
-                    }`}
+                        }`}
                     disabled={!isDevnetStablecoinAllowed}
                 >
                     <Activity size={18} className={isAutoPayEnabled ? "animate-pulse" : ""} />
