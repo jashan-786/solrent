@@ -53,23 +53,23 @@ export default function TenantDashboardPage() {
             <div className="flex justify-between items-center">
                 <TenantIntro name={dashboard?.profile?.name} />
                 {dashboard?.nextPayment && (
-                    <PayRentModal 
-                        payment={dashboard.nextPayment} 
-                        buildingWallet={activeLease?.unit?.building?.landlord?.walletAddress || ""} 
+                    <PayRentModal
+                        payment={dashboard.nextPayment}
+                        buildingWallet={activeLease?.unit?.building?.landlord?.walletAddress || ""}
                     />
                 )}
             </div>
-            <BriefInfo 
-                lease={activeLease} 
-                nextPayment={dashboard?.nextPayment} 
+            <BriefInfo
+                lease={activeLease}
+                nextPayment={dashboard?.nextPayment}
                 mutateDashboard={() => mutate("/api/tenant/dashboard")}
             />
             <div className="flex flex-col md:flex-row gap-4 w-full h-full items-center">
                 <div className="w-full md:w-2/3 h-full">
-                    <PropertyHeader 
-                        title={activeLease ? `${activeLease.unit?.unitNumber} - ${activeLease.unit?.building?.name}` : "No Active Lease"} 
-                        address={activeLease?.unit?.building?.address || "Please contact your landlord for an invite code."} 
-                        image="/property-view.jpg" 
+                    <PropertyHeader
+                        title={activeLease ? `${activeLease.unit?.unitNumber} - ${activeLease.unit?.building?.name}` : "No Active Lease"}
+                        address={activeLease?.unit?.building?.address || "Please contact your landlord for an invite code."}
+                        image="/property-view.jpg"
                         stats={[
                             { label: "BEDROOM", val: `${activeLease?.unit?.bedrooms || 0} Rooms` },
                             { label: "RENT", val: `${activeLease?.monthlyRent || 0} ${activeLease?.stablecoin || 'USDC'}` },
@@ -82,10 +82,10 @@ export default function TenantDashboardPage() {
                     <BalanceCard />
                 </div>
             </div>
-            
-            <MaintenanceModal 
-                isOpen={isMaintenanceOpen} 
-                onClose={() => setIsMaintenanceOpen(false)} 
+
+            <MaintenanceModal
+                isOpen={isMaintenanceOpen}
+                onClose={() => setIsMaintenanceOpen(false)}
                 buildingId={activeLease?.unit?.buildingId}
                 unitId={activeLease?.unit?.id}
             />

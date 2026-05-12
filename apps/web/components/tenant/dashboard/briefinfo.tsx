@@ -31,12 +31,12 @@ export default function BriefInfo({ lease, nextPayment, mutateDashboard }: { lea
         {
             title: "Lease Status",
             value: lease ? (lease.status === "PENDING" ? "Pending" : "Active") : "None",
-            description: lease ? (lease.status === "PENDING" ? "Awaiting your signature" : `Expires ${new Date(lease.endDate).toLocaleDateString()}`) : "Not Rented",
+            description: lease ? (lease.status === "PENDING" ? "Awaiting your signature" : `Expires ${lease.endDate ? new Date(lease.endDate).toLocaleDateString() : 'N/A'}`) : "Not Rented",
             icon: lease?.status === "PENDING" ? <Clock size={16} className="text-secondary-500 animate-pulse" /> : <ShieldCheck size={16} className="text-secondary-500" />,
         },
         {
             title: "Monthly Rent",
-            value: lease ? `${lease.monthlyRent?.toLocaleString()} ${lease.stablecoin || "USDC"}` : "0 USDC",
+            value: lease ? `${(lease.monthlyRent || 0).toLocaleString()} ${lease.stablecoin || "USDC"}` : "0 USDC",
             description: "On-Chain Verified",
             icon: <CircleCheckBig size={16} className="text-secondary-500" />,
         },
