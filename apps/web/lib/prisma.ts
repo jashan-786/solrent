@@ -1,4 +1,9 @@
 import { PrismaClient } from "@prisma/client";
+// Fix BigInt serialization project-wide
+(BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+};
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
